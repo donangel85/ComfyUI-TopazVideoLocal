@@ -13,6 +13,7 @@ from __future__ import annotations
 from pathlib import Path
 
 from ..topaz_studio import models
+from ..topaz_studio.command import render_filter_path
 from ..topaz_studio.engine import EngineSettings, FilterSpec, TopazEngine
 from ..topaz_studio.logging_util import get_logger
 
@@ -24,6 +25,7 @@ from .common import (
     model_choices,
     settings_from_input,
 )
+from .video_upscale import _RawSpec
 
 logger = get_logger()
 
@@ -111,7 +113,8 @@ class TopazVideoStabilize:
         base = topaz.base_options()
 
         def specs(work_dir: Path):
-            cpe_file = (work_dir / "cpe.json").as_posix()
+            # Quoted and colon-escaped: the drive letter would otherwise end the option.
+            cpe_file = render_filter_path(work_dir / "cpe.json")
             analysis = FilterSpec(models.CAMERA_POSE, {
                 "model": cpe.short_code,
                 "filename": cpe_file,
@@ -130,7 +133,17 @@ class TopazVideoStabilize:
                 "csx": float(canvas_scale),
                 "csy": float(canvas_scale),
             })
-            return analysis, stabilize
+            # auto_crop crops into the frame to hide the edges stabilization exposes,
+            # and how far it crops depends on how much the camera actually moved: the
+            # same 320x240 clip came back as 312x232 with mild motion and 252x188 with
+            # strong motion. There is nothing to compute the size from ahead of time,
+            # so resample back to the input size. full_frame measured as size-preserving,
+            # but the scale is applied there too — an IMAGE batch has to be one size, and
+            # a mismatch surfaces only as a raw byte count that will not divide evenly.
+            resized = _RawSpec(
+                stabilize.render() + f",scale={in_width}:{in_height}:flags=lanczos"
+            )
+            return analysis, resized
 
         logger.info("stabilize %dx%d with %s (%s), cpe model %s",
                     in_width, in_height, chosen.label, mode, cpe.short_code)

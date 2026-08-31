@@ -17,6 +17,8 @@ from topaz_studio.command import (  # noqa: E402
     lossless_encoder_args,
     raw_input_args,
     raw_output_args,
+    render_filter_path,
+    render_parameters_dict,
 )
 
 
@@ -104,3 +106,80 @@ def test_build_filter_skips_empty_values():
 
 def test_build_filter_renders_bare_name_without_options():
     assert build_filter("tvai_up", {}) == "tvai_up"
+
+
+class TestParametersDict:
+    """The tvai_* ``parameters`` option is a nested dictionary, so its separators have
+    to survive the filtergraph parser before the dictionary parser ever sees them.
+
+    Measured against Topaz' ffmpeg 8.1 with hyp-1: quoting alone yields
+    ``Error applying option 'hdr_ip_adjust' to filter 'tvai_up': Option not found``,
+    escaping alone fails the same way, and the two combined run cleanly.
+    """
+
+    def test_multiple_entries_are_quoted_and_escaped(self):
+        rendered = render_parameters_dict({
+            "sdr_ip": "0.65", "hdr_ip_adjust": "0.5", "saturate": "0.5",
+        })
+        assert rendered == r"'sdr_ip=0.65\:hdr_ip_adjust=0.5\:saturate=0.5'"
+
+    def test_separator_is_escaped_not_bare(self):
+        rendered = render_parameters_dict({"a": "1", "b": "2"})
+        assert ":" in rendered
+        # A bare colon would be eaten by the filtergraph parser and turn 'b' into an
+        # unknown top-level filter option.
+        assert "1:b" not in rendered
+        assert r"1\:b" in rendered
+
+    def test_single_entry_still_quoted(self):
+        # Deinterlace passes exactly one entry. It happened to work before this fix
+        # precisely because it has no inner separator; it must keep working after it.
+        assert render_parameters_dict({"interlacing": 0}) == "'interlacing=0'"
+
+    def test_empty_dict(self):
+        assert render_parameters_dict({}) == "''"
+
+    def test_backslash_in_value_is_doubled(self):
+        assert render_parameters_dict({"k": "a" + "\\" + "b"}) == r"'k=a\\b'"
+
+    def test_render_survives_build_filter(self):
+        rendered = build_filter("tvai_up", {
+            "model": "hyp-1",
+            "scale": 1,
+            "parameters": render_parameters_dict({"sdr_ip": "0.65", "saturate": "0.5"}),
+        })
+        assert rendered == (
+            "tvai_up=model=hyp-1:scale=1:"
+            r"parameters='sdr_ip=0.65\:saturate=0.5'"
+        )
+
+
+class TestFilterPath:
+    """Stabilization hands tvai_cpe and tvai_stb a path to its cpe.json side file.
+
+    On Windows that path starts with a drive letter, and the bare form
+    ``filename=C:/tmp/cpe.json`` makes the filtergraph parser stop at the colon and
+    report ``No option name near '/tmp/cpe.json'``. Verified against ffmpeg 8.1:
+    quoting alone and escaping alone both still fail; together they work.
+    """
+
+    def test_drive_letter_colon_is_quoted_and_escaped(self):
+        assert render_filter_path("C:/tmp/cpe.json") == r"'C\:/tmp/cpe.json'"
+
+    def test_backslash_separators_become_forward_slashes(self):
+        # A backslash separator would otherwise read as an escape character.
+        assert render_filter_path("C:\\tmp\\cpe.json") == r"'C\:/tmp/cpe.json'"
+
+    def test_accepts_a_path_object(self):
+        assert render_filter_path(Path("C:/tmp") / "cpe.json") == r"'C\:/tmp/cpe.json'"
+
+    def test_relative_path_needs_no_escape_but_is_still_quoted(self):
+        assert render_filter_path("cpe.json") == "'cpe.json'"
+
+    def test_survives_build_filter(self):
+        rendered = build_filter("tvai_cpe", {
+            "model": "cpe-2",
+            "filename": render_filter_path("C:/tmp/cpe.json"),
+            "download": 1,
+        })
+        assert rendered == r"tvai_cpe=model=cpe-2:filename='C\:/tmp/cpe.json':download=1"

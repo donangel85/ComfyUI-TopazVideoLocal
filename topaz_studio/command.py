@@ -24,12 +24,42 @@ def escape_filter_value(value: str) -> str:
     return str(value).replace("\\", "\\\\").replace(":", "\\:").replace(",", "\\,")
 
 
+def render_filter_path(path) -> str:
+    """Render a filesystem path used as a tvai_* filter option value.
+
+    On Windows every absolute path carries the drive-letter colon, which the filtergraph
+    parser reads as its own option separator: ``filename=C:/tmp/cpe.json`` is reported as
+    ``No option name near '/tmp/cpe.json'``. As with the parameters dictionary, neither
+    quoting nor escaping alone is enough — ``filename='C:/tmp/cpe.json'`` fails the same
+    way and bare ``C\\:/tmp/cpe.json`` fails too. Both together work.
+
+    Forward slashes throughout, so a backslash separator is never mistaken for an escape.
+    """
+    text = str(path).replace("\\", "/")
+    return "'" + text.replace(":", "\\:") + "'"
+
+
 def render_parameters_dict(extra: dict) -> str:
     """Render the tvai_* ``parameters`` dictionary option.
 
-    Quoted, so the inner separators are not mistaken for the filter's own.
+    ``parameters`` is an FFmpeg dictionary option, so its value passes two parsers: the
+    filtergraph splits filter options on ``:``, and only afterwards does the dictionary
+    itself get split on ``:`` again. Both separators have to survive the first pass.
+
+    Quoting alone is not enough. Measured against Topaz' ffmpeg 8.1,
+    ``parameters='a=1:b=2'`` still gets split by the outer parser, which then reports
+    ``Error applying option 'b' to filter 'tvai_up': Option not found``. Escaping alone
+    is not enough either — ``parameters=a=1\\:b=2`` fails identically. Only the two
+    together work, so both are emitted here.
+
+    A colon inside a key or value is not representable: unescaping happens before the
+    dictionary is parsed, so any colon that reaches it becomes a separator. No Topaz
+    parameter uses one — the values are numbers and the SAM2 click grammar.
     """
-    inner = ":".join(f"{k}={v}" for k, v in extra.items())
+    def piece(text: str) -> str:
+        return str(text).replace("\\", "\\\\")
+
+    inner = "\\:".join(f"{piece(k)}={piece(v)}" for k, v in extra.items())
     return "'" + inner + "'"
 
 
