@@ -37,9 +37,57 @@ and what is missing, without running a workflow.
 | **Topaz Upscale Params** | Ready-made profiles, or manual control over preblur, noise, details, halo, blur, compression, grain, blend. Optional. |
 | **Topaz Hyperion HDR Params** | SDR → HDR parameters for `hyp-1`. Optional. |
 | **Topaz SAM2 Mask** | Segment-Anything-2 click expression for object-aware processing. Optional. |
+| **Topaz Resolution** | Named output sizes with orientation and a divisibility constraint. Outputs plain INTs, so it drives other nodes too. Optional. |
 | **Topaz Diagnostics** | Installation, codecs, models, licence and CLI-lock status. |
 
 The main nodes work on their own; attach the settings nodes only when you need them.
+
+## Choosing an output size
+
+Both upscale nodes take `scale_mode: factor | target_size`. `factor` is an exact integer
+multiple and the most predictable option. `target_size` accepts any resolution: Topaz
+upscales far enough to cover it, and the result is fitted to the exact size you asked for.
+
+**Topaz Resolution** exists so you do not have to type those numbers. Pick a named size,
+an orientation, and — where it matters — a divisibility constraint:
+
+```
+Topaz Resolution ──▶ width  ──▶ target_width
+                 └─▶ height ──▶ target_height
+```
+
+It outputs plain `INT`s rather than a private type, so the same node drives MiniMax-H3,
+LTX2.5, an empty latent, or anything else that takes dimensions.
+
+### Divisibility
+
+Most latent video models only accept dimensions that are a multiple of some number,
+because their encoder downsamples by that factor. MiniMax-H3 wants multiples of 32, which
+is why Full HD there is **1920x1088**, not 1920x1080.
+
+Set `divisible_by` and both edges are snapped for you. `rounding` decides which way:
+`up` never returns less than you asked for, `down` never returns more, `nearest` keeps
+the smallest difference. Snapping happens after the orientation is applied, so portrait
+sizes satisfy the constraint too.
+
+Note that two different sizes both get called 2K, so the list names them: **QHD 1440p**
+is 2560x1440, **DCI 2K** is 2048x1080.
+
+### fit, fill and stretch
+
+When the target does not match the source aspect ratio, `fit_mode` decides what happens.
+A 4:3 frame going to 640x360:
+
+| Mode | Result |
+|---|---|
+| `fit` (default) | scaled to 480x360, black bars either side. Nothing is lost or distorted. |
+| `fill` | scaled to 640x480, then top and bottom cropped away. Fills the frame, loses the edges. |
+| `stretch` | squashed to 640x360. No bars, no crop, but the aspect ratio changes. |
+
+Every mode ends at exactly the size requested — an IMAGE batch has to be one size.
+
+**Topaz Upscale Stage** offers the same `scale_mode`, so an intermediate pass can be
+pinned to a resolution before the next model sees it.
 
 ## Multi-pass upscaling
 
@@ -119,6 +167,30 @@ profile 'Compressed / web video' at strength 1 ->
 
 Copy those into manual mode when you want to fine-tune from a profile rather than from
 zero. Topaz presets also log the model they were authored for.
+
+### Loading a profile into the sliders
+
+The node also carries two buttons.
+
+**Load preset into sliders** takes the profile currently selected, writes its resolved
+numbers into the six sliders, and sets `profile` back to `manual`. You then adjust from
+there instead of from zero. `profile_strength` is applied while loading, so the numbers
+you end up looking at are the ones that will run.
+
+The dropdown is reset on purpose. Leaving it set would make the node apply the profile
+again when the graph runs and silently discard everything you had just adjusted.
+
+**Save sliders as preset** stores the current values under a name of your choosing. It
+appears in the dropdown as `My: <name>` and behaves like any other profile, including
+`profile_strength`. Saving under an existing name overwrites it.
+
+Saved presets live in `user_presets.json` beside the package and are git-ignored — they
+are your machine's data. Other Upscale Params nodes already on the canvas pick up a new
+entry after the next ComfyUI restart.
+
+Both buttons come from a small frontend extension in `web/`. Without it — running a
+workflow through the API, for instance — the `profile` dropdown still works exactly as
+described above, applied on the server. Nothing depends on the browser being involved.
 
 ## What about audio?
 
@@ -214,9 +286,17 @@ it can be pasted straight into a terminal to reproduce a failure.
 python -m pytest
 ```
 
-The tests cover the command builder, error classification, the model catalog and frame
-conversion. They need neither Topaz nor ComfyUI: `topaz_studio` is deliberately free of
-ComfyUI imports.
+The tests cover the command builder, error classification, the model catalog, frame
+conversion, the resolution arithmetic and the user-preset store. They need neither Topaz
+nor ComfyUI: `topaz_studio` is deliberately free of ComfyUI imports.
+
+Layout:
+
+| Directory | Contents |
+|---|---|
+| `topaz_studio/` | Backend. Knows Topaz, knows nothing about ComfyUI, testable on its own. |
+| `topaz_nodes/` | The ComfyUI layer. Thin: gather widget values, call the backend, turn a failure into a message worth reading. |
+| `web/` | Frontend extension. Only the Upscale Params buttons — everything else works without it. |
 
 ## Licence
 

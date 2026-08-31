@@ -15,7 +15,13 @@ from .common import (
     settings_from_input,
 )
 from ..topaz_studio.command import render_parameters_dict
-from ..topaz_studio.scaling import chain_scale, describe_chain, factor_for_target
+from ..topaz_studio.scaling import (
+    FIT,
+    FIT_MODES,
+    describe_chain,
+    factor_for_target,
+    fit_filters,
+)
 from .upscale_chain import build_chain_segments
 
 logger = get_logger()
@@ -67,6 +73,13 @@ class TopazVideoUpscale:
                                          "step": 8}),
                 "target_height": ("INT", {"default": 1088, "min": 16, "max": 16384,
                                           "step": 8}),
+                "fit_mode": (list(FIT_MODES), {
+                    "default": FIT,
+                    "tooltip": "Only applies to target_size. fit: keep the aspect "
+                               "ratio, pad the remainder black. fill: keep it and crop "
+                               "the overflow. stretch: hit the exact size and let the "
+                               "aspect ratio change.",
+                }),
                 "params": ("TOPAZ_UPSCALE_PARAMS",),
                 "upscale_chain": ("TOPAZ_UPSCALE_CHAIN", {
                     "tooltip": "Extra passes from Topaz Upscale Stage nodes. They run "
@@ -86,7 +99,7 @@ class TopazVideoUpscale:
                    "Requires a licensed local Topaz Video installation.")
 
     def upscale(self, images, model, scale_mode, scale_factor, fps,
-                target_width=1920, target_height=1088, params=None,
+                target_width=1920, target_height=1088, fit_mode=FIT, params=None,
                 upscale_chain=None, engine=None):
         settings: EngineSettings = settings_from_input(engine)
         topaz = TopazEngine(settings)
@@ -123,9 +136,9 @@ class TopazVideoUpscale:
             # upscaling at all. So pick the smallest supported factor covering what is
             # still missing after the chain, then resample to the exact size.
             factor = factor_for_target(chosen.scales, width, height,
-                                       out_width, out_height)
+                                       out_width, out_height, fit_mode)
             options["scale"] = factor
-            post_filters.append(f"scale={out_width}:{out_height}:flags=lanczos")
+            post_filters.extend(fit_filters(fit_mode, out_width, out_height))
 
         extra = {}
         if params:
@@ -141,9 +154,8 @@ class TopazVideoUpscale:
         chain = ",".join(segments + post_filters)
 
         if upscale_chain:
-            logger.info("upscale chain: %s then %s (%dx before this node)",
-                        describe_chain(upscale_chain), chosen.label,
-                        chain_scale(upscale_chain))
+            logger.info("upscale chain: %s then %s (%dx%d before this node)",
+                        describe_chain(upscale_chain), chosen.label, width, height)
         logger.info("upscale %dx%d -> %dx%d using %s (%d Topaz pass(es))",
                     in_width, in_height, out_width, out_height, chosen.label,
                     len(segments))

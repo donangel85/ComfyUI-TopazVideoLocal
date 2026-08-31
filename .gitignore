@@ -7,6 +7,7 @@ venv/
 
 # Local, machine-specific configuration — never commit
 config.json
+user_presets.json
 
 # Logs and temporary run data
 *.log

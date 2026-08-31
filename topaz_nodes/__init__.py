@@ -2,6 +2,7 @@
 
 from .diagnostics import TopazDiagnostics
 from .estimate_params import TopazParameterEstimate
+from .resolution import TopazResolution
 from .restore_nodes import TopazDeinterlace, TopazMotionDeblur
 from .image_upscale import TopazImageUpscale
 from .upscale_chain import TopazUpscaleStage
@@ -23,6 +24,7 @@ NODE_CLASS_MAPPINGS = {
     "TopazStudioMotionDeblur": TopazMotionDeblur,
     "TopazStudioParameterEstimate": TopazParameterEstimate,
     "TopazStudioImageUpscale": TopazImageUpscale,
+    "TopazStudioResolution": TopazResolution,
     "TopazStudioEngineSettings": TopazEngineSettings,
     "TopazStudioUpscaleParams": TopazUpscaleParams,
     "TopazStudioUpscaleStage": TopazUpscaleStage,
@@ -39,6 +41,7 @@ NODE_DISPLAY_NAME_MAPPINGS = {
     "TopazStudioMotionDeblur": "Topaz Motion Deblur",
     "TopazStudioParameterEstimate": "Topaz Parameter Estimate",
     "TopazStudioImageUpscale": "Topaz Image Upscale",
+    "TopazStudioResolution": "Topaz Resolution",
     "TopazStudioEngineSettings": "Topaz Engine Settings",
     "TopazStudioUpscaleParams": "Topaz Upscale Params",
     "TopazStudioUpscaleStage": "Topaz Upscale Stage",

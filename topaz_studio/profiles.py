@@ -194,13 +194,31 @@ def _load_topaz_presets(presets_dir: Path) -> list[Profile]:
     return profiles
 
 
+def _load_user_presets() -> list[Profile]:
+    """Presets the user saved. Never raises — see :mod:`user_profiles`."""
+    from . import user_profiles
+
+    return [
+        Profile(
+            name=entry["name"],
+            description=entry.get("description") or "Saved on this machine.",
+            options=dict(entry.get("options") or {}),
+            estimate=int(entry.get("estimate") or 0),
+            suggested_model=entry.get("suggested_model") or "",
+            source="user",
+        )
+        for entry in user_profiles.load()
+    ]
+
+
 @functools.lru_cache(maxsize=4)
-def _catalog(presets_dir_str: str, stamp: float) -> tuple[Profile, ...]:
+def _catalog(presets_dir_str: str, stamp: float, user_stamp: float) -> tuple[Profile, ...]:
     entries = list(_BUILTIN)
     if presets_dir_str:
         found = _load_topaz_presets(Path(presets_dir_str))
         logger.debug("loaded %d Topaz presets with tuning values", len(found))
         entries.extend(found)
+    entries.extend(_load_user_presets())
     return tuple(entries)
 
 
@@ -220,23 +238,49 @@ def presets_dir_for(model_dir) -> Path | None:
 
 
 def load(model_dir=None) -> tuple[Profile, ...]:
+    from . import user_profiles
+
     presets = presets_dir_for(model_dir)
-    return _catalog(str(presets) if presets else "", _stamp(presets))
+    # The user file's timestamp is part of the cache key, so a saved preset shows up
+    # without waiting for the cache to be cleared.
+    try:
+        user_stamp = user_profiles.USER_PRESETS_PATH.stat().st_mtime
+    except OSError:
+        user_stamp = 0.0
+    return _catalog(str(presets) if presets else "", _stamp(presets), user_stamp)
+
+
+def label_for(profile: Profile) -> str:
+    """Dropdown text for one profile, prefixed by where it came from."""
+    from . import user_profiles
+
+    if profile.source == "topaz":
+        return f"Topaz: {profile.name}"
+    if profile.source == "user":
+        return f"{user_profiles.PREFIX}{profile.name}"
+    return profile.name
 
 
 def labels(model_dir=None) -> list[str]:
-    """Dropdown entries. ``manual`` first, then purpose profiles, then Topaz's own."""
-    entries = [MANUAL]
-    for profile in load(model_dir):
-        entries.append(profile.name if profile.source == "builtin"
-                       else f"Topaz: {profile.name}")
-    return entries
+    """Dropdown entries: ``manual``, then purpose profiles, Topaz's own, then saved."""
+    return [MANUAL] + [label_for(profile) for profile in load(model_dir)]
 
 
 def resolve(label: str, model_dir=None) -> Profile | None:
+    from . import user_profiles
+
     if not label or label == MANUAL:
         return None
-    wanted = label[len("Topaz: "):] if label.startswith("Topaz: ") else label
+    wanted = label
+    for prefix in ("Topaz: ", user_profiles.PREFIX):
+        if wanted.startswith(prefix):
+            wanted = wanted[len(prefix):]
+            break
+    # Match on the full label first: a saved preset may legitimately carry the same bare
+    # name as a built-in one, and the prefix is what tells them apart.
+    for profile in load(model_dir):
+        if label_for(profile) == label:
+            return profile
     for profile in load(model_dir):
         if profile.name == wanted:
             return profile

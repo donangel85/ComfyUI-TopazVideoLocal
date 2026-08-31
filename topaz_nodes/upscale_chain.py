@@ -17,6 +17,13 @@ from ..topaz_studio import models
 from ..topaz_studio.command import render_parameters_dict
 from ..topaz_studio.engine import FilterSpec
 from ..topaz_studio.logging_util import get_logger
+from ..topaz_studio.scaling import (
+    FIT,
+    FIT_MODES,
+    describe_chain,
+    factor_for_target,
+    fit_filters,
+)
 
 from .common import CATEGORY, default_model, model_choices, model_dir_or_none
 
@@ -33,14 +40,37 @@ class TopazUpscaleStage:
                 "model": (model_choices(models.UPSCALE), {
                     "default": default_model(models.UPSCALE, "prob-4"),
                 }),
+                "scale_mode": (["factor", "target_size"], {
+                    "default": "factor",
+                    "tooltip": "factor: an exact integer multiple, the most predictable "
+                               "option. target_size: upscale far enough to cover the "
+                               "size below, then resample this stage's output to it "
+                               "before the next stage sees it.",
+                }),
                 "scale_factor": ([1, 2, 3, 4], {
                     "default": 2,
-                    "tooltip": "Scales multiply along the chain: 2x then 2x is 4x "
-                               "overall. Not every model supports every factor — "
-                               "pnat-1 only allows 2, hyp-1 only 1.",
+                    "tooltip": "Used when scale_mode is 'factor'. Scales multiply along "
+                               "the chain: 2x then 2x is 4x overall. Not every model "
+                               "supports every factor — pnat-1 only allows 2, hyp-1 "
+                               "only 1.",
                 }),
             },
             "optional": {
+                "target_width": ("INT", {
+                    "default": 1920, "min": 16, "max": 16384, "step": 8,
+                    "tooltip": "Used when scale_mode is 'target_size'. Connect a Topaz "
+                               "Resolution node here to pick a named size.",
+                }),
+                "target_height": ("INT", {
+                    "default": 1088, "min": 16, "max": 16384, "step": 8,
+                    "tooltip": "Used when scale_mode is 'target_size'.",
+                }),
+                "fit_mode": (list(FIT_MODES), {
+                    "default": FIT,
+                    "tooltip": "How the frame is placed into the target size. fit pads "
+                               "with black, fill crops the overflow, stretch changes "
+                               "the aspect ratio.",
+                }),
                 "params": ("TOPAZ_UPSCALE_PARAMS", {
                     "tooltip": "Tuning for this stage only.",
                 }),
@@ -58,14 +88,17 @@ class TopazUpscaleStage:
     DESCRIPTION = ("One pass of a multi-pass Topaz upscale. Chain several of these, then "
                    "connect the last to Topaz Video Upscale.")
 
-    def build(self, model, scale_factor, params=None, previous_stage=None):
+    def build(self, model, scale_mode, scale_factor, target_width=1920,
+              target_height=1088, fit_mode=FIT, params=None, previous_stage=None):
         resolved = models.resolve(model_dir_or_none(), model, models.UPSCALE)
         short_code = resolved.short_code if resolved else str(model)
         scale = int(scale_factor)
 
         # Validate here rather than letting ffmpeg fail several seconds into a run.
         # Topaz's own message is "Invalid scale 1 for model pnat-1, allowed scales are: 2".
-        if resolved and not resolved.supports_scale(scale):
+        # Only in factor mode: under target_size the factor is derived from the geometry
+        # at render time, when the size the previous stages produced is finally known.
+        if scale_mode == "factor" and resolved and not resolved.supports_scale(scale):
             supported = ", ".join(str(s) for s in resolved.scales) or "unknown"
             raise ValueError(
                 f"{resolved.display_name} ({short_code}) does not support scale {scale}. "
@@ -82,10 +115,13 @@ class TopazUpscaleStage:
             "options": tuning,
             "extra": extra,
         }
+        if scale_mode == "target_size":
+            stage["target"] = (int(target_width), int(target_height))
+            stage["fit_mode"] = fit_mode
 
         chain = list(previous_stage or []) + [stage]
         logger.debug("upscale chain now has %d stage(s): %s", len(chain),
-                     " -> ".join(f"{s['model']}x{s['scale']}" for s in chain))
+                     describe_chain(chain))
         return (chain,)
 
 
@@ -103,7 +139,17 @@ def build_chain_segments(topaz, upscale_chain, in_width: int, in_height: int):
 
     for index, stage in enumerate(upscale_chain or [], start=1):
         stage_model = topaz.resolve_model(stage["model"], models.UPSCALE)
-        stage_scale = int(stage.get("scale", 1))
+        target = stage.get("target")
+        stage_fit = stage.get("fit_mode", FIT)
+
+        if target:
+            # Only now is the incoming size known, so this is the first point at which
+            # the factor needed to cover the target can be worked out.
+            stage_scale = factor_for_target(stage_model.scales, width, height,
+                                            target[0], target[1], stage_fit)
+        else:
+            stage_scale = int(stage.get("scale", 1))
+
         if not stage_model.supports_scale(stage_scale):
             supported = ", ".join(str(s) for s in stage_model.scales) or "unknown"
             raise ValueError(
@@ -120,5 +166,11 @@ def build_chain_segments(topaz, upscale_chain, in_width: int, in_height: int):
         segments.append(FilterSpec(models.UPSCALE, options).render())
         width *= stage_scale
         height *= stage_scale
+
+        if target:
+            # Resample before the next stage runs, so the following model sees the size
+            # this stage was asked to produce rather than a whole-number multiple of it.
+            segments.extend(fit_filters(stage_fit, target[0], target[1]))
+            width, height = int(target[0]), int(target[1])
 
     return segments, width, height
