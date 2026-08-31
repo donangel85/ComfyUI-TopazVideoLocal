@@ -1,0 +1,21 @@
+[project]
+name = "comfyui-topazstudio"
+description = "Topaz Video AI nodes for ComfyUI. All processing runs locally."
+version = "0.1.0"
+license = { file = "LICENSE" }
+requires-python = ">=3.10"
+dependencies = ["numpy"]
+
+[project.urls]
+Repository = "https://github.com/USERNAME/ComfyUI-TopazStudio"
+
+[tool.comfy]
+PublisherId = ""
+DisplayName = "ComfyUI-TopazStudio"
+Icon = ""
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+# importlib mode keeps pytest from walking up into the package root and importing
+# __init__.py, which pulls in the ComfyUI-dependent node layer.
+addopts = "--import-mode=importlib"

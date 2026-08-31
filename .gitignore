@@ -1,0 +1,19 @@
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.venv/
+venv/
+
+# Local, machine-specific configuration — never commit
+config.json
+
+# Logs and temporary run data
+*.log
+temp/
+
+# Research and documentation live OUTSIDE this repository (siblings in the
+# parent folder) so they cannot be committed by accident. These entries only
+# matter if the repository is ever moved.
+research/
+docs/
