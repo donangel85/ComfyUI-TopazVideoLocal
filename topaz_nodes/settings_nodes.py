@@ -140,18 +140,29 @@ class TopazUpscaleParams:
             "required": {
                 "profile": (profiles.labels(model_dir_or_none()), {
                     "default": profiles.MANUAL,
-                    "tooltip": "manual: use the sliders below. Any other entry applies a "
-                               "ready-made parameter set and ignores the sliders. "
-                               "Entries prefixed 'Topaz:' come from Topaz Video's own "
-                               "presets; the rest are starting points shipped with this "
-                               "package. The resolved values are written to the log so "
-                               "you can copy them into manual mode and fine-tune.",
+                    "tooltip": "manual: use the sliders below. Picking anything else "
+                               "copies that preset's values into the sliders, where you "
+                               "can adjust them. Entries prefixed 'Topaz:' come from "
+                               "Topaz Video's own presets, 'My:' are your own saved "
+                               "ones, and the rest ship with this package.",
                 }),
                 "profile_strength": ("FLOAT", {
                     "default": 1.0, "min": 0.0, "max": 2.0, "step": 0.05,
                     "tooltip": "Scales a profile's intensity. 0.5 is half as "
                                "aggressive, 0 disables its tuning. No effect in manual "
-                               "mode.",
+                               "mode. Change this before picking the profile, or press "
+                               "'Reload preset into sliders' afterwards.",
+                }),
+                "edit_preset_values": ("BOOLEAN", {
+                    "default": False,
+                    "label_on": "sliders (edited)",
+                    "label_off": "preset as-is",
+                    "tooltip": "Which values actually run. Off: the profile is applied "
+                               "as authored and the sliders are ignored. On: the "
+                               "sliders are used, so your adjustments count.\n\n"
+                               "Picking a profile in the browser fills the sliders and "
+                               "turns this on for you. Turn it off to go back to the "
+                               "untouched preset — your slider values are kept.",
                 }),
                 "preblur": rel("Negative for aliasing/moire in the source, positive for "
                                "lens blur."),
@@ -193,11 +204,18 @@ class TopazUpscaleParams:
     FUNCTION = "build"
     CATEGORY = CATEGORY
 
-    def build(self, profile, profile_strength, preblur, noise, details, halo, blur,
-              compression, prenoise=0.0, grain=0.0, grain_size=0.0,
-              grain_type="default", blend=0.0, color_correction=True,
+    def build(self, profile, profile_strength, edit_preset_values, preblur, noise,
+              details, halo, blur, compression, prenoise=0.0, grain=0.0,
+              grain_size=0.0, grain_type="default", blend=0.0, color_correction=True,
               auto_estimate_frames=0):
         chosen = profiles.resolve(profile, model_dir_or_none())
+        # edit_preset_values is what the browser turns on after copying a preset into
+        # the sliders. Without it the profile wins and the sliders are ignored, which is
+        # what an API caller with no frontend gets — and what this node always did.
+        if chosen is not None and edit_preset_values:
+            logger.info("profile '%s' was copied into the sliders; using the slider "
+                        "values", profile)
+            chosen = None
         if chosen is not None:
             options = chosen.resolve(profile_strength)
             options["kcolor"] = 1 if color_correction else 0

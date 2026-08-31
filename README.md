@@ -143,11 +143,12 @@ fits the material: a wide spread means the footage changes character partway thr
 ## Profiles
 
 **Topaz Upscale Params** starts with a `profile` dropdown. Leave it on `manual` and the
-sliders apply as usual; pick anything else and that profile's values are used instead.
+sliders apply as usual; pick anything else and that profile's values are used.
 `profile_strength` scales a profile up or down — 0.5 for half the intervention, 0 to
-disable its tuning entirely.
+disable its tuning entirely. In the browser, picking a profile also copies its values into
+the sliders so you can adjust them — see below.
 
-Two kinds of entry appear:
+Three kinds of entry appear, and the prefix tells them apart:
 
 - **`Topaz: …`** — read live from Topaz Video's own preset folder, authored by Topaz
   Labs. Their GUI stores values on a -100..100 scale; they are converted to the -1..1 the
@@ -155,7 +156,8 @@ Two kinds of entry appear:
   presets only pick a model and output settings, and would otherwise fill the dropdown
   with identical empty entries. Topaz also ships an old and a new copy of nearly every
   preset under the same name, so duplicates are collapsed to the newer file.
-- **Everything else** — starting points shipped with this package, derived from what each
+- **`My: …`** — presets you saved yourself. See below.
+- **No prefix** — starting points shipped with this package, derived from what each
   parameter is documented to do. Useful defaults, not official Topaz values.
 
 Whichever you pick, the resolved parameters are written to the log:
@@ -165,32 +167,41 @@ profile 'Compressed / web video' at strength 1 ->
   blur=0, compression=0.6, details=0.3, estimate=0, halo=0.1, noise=0.25, preblur=0
 ```
 
-Copy those into manual mode when you want to fine-tune from a profile rather than from
-zero. Topaz presets also log the model they were authored for.
+Topaz presets also log the model they were authored for.
 
-### Loading a profile into the sliders
+### Seeing and adjusting a preset's values
 
-The node also carries two buttons.
+Picking a profile in the browser **copies its numbers straight into the sliders**, so you
+can see what the preset actually does and change any of it. `profile_strength` is applied
+while copying, so what you end up looking at is what will run.
 
-**Load preset into sliders** takes the profile currently selected, writes its resolved
-numbers into the six sliders, and sets `profile` back to `manual`. You then adjust from
-there instead of from zero. `profile_strength` is applied while loading, so the numbers
-you end up looking at are the ones that will run.
+Alongside the dropdown sits `edit_preset_values`, which decides who wins:
 
-The dropdown is reset on purpose. Leaving it set would make the node apply the profile
-again when the graph runs and silently discard everything you had just adjusted.
+| `edit_preset_values` | What runs |
+|---|---|
+| `preset as-is` (off) | The profile, exactly as authored. The sliders are ignored. |
+| `sliders (edited)` (on) | The sliders. Your adjustments count. |
 
-**Save sliders as preset** stores the current values under a name of your choosing. It
-appears in the dropdown as `My: <name>` and behaves like any other profile, including
-`profile_strength`. Saving under an existing name overwrites it.
+Picking a profile turns it **on** for you, because the sliders now hold that preset's
+values and adjusting them is the point. Turn it off to go back to the untouched preset —
+your slider values are kept, just not used, so you can flip between the two and compare.
+
+Two buttons round it out:
+
+- **Reload preset into sliders** — copies the selected profile in again. Useful after
+  changing `profile_strength`, or to discard an experiment and start over.
+- **Save sliders as preset** — stores the current values under a name you choose. It
+  appears in the dropdown as `My: <name>` and behaves like any other profile, strength
+  scaling included. Saving under an existing name overwrites it.
 
 Saved presets live in `user_presets.json` beside the package and are git-ignored — they
-are your machine's data. Other Upscale Params nodes already on the canvas pick up a new
-entry after the next ComfyUI restart.
+are your machine's data. Other Upscale Params nodes already on the canvas offer a newly
+saved entry after the next ComfyUI restart.
 
-Both buttons come from a small frontend extension in `web/`. Without it — running a
-workflow through the API, for instance — the `profile` dropdown still works exactly as
-described above, applied on the server. Nothing depends on the browser being involved.
+All of this comes from a small frontend extension in `web/`. Without it — running a
+workflow through the API, for instance — `edit_preset_values` stays off and the `profile`
+dropdown behaves exactly as it always has, applied on the server. Nothing here depends on
+a browser being involved.
 
 ## What about audio?
 
