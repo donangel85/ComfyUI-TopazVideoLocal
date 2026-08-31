@@ -60,6 +60,16 @@ BASELINES = {
         # --- appended ---
         "fit_mode",
     ],
+    # The one deliberate removal. A field_order widget sat between model and
+    # scale_factor and did nothing at all: tvai_up documents no interlacing parameter,
+    # the dictionary option swallows unknown keys in silence, and both settings measured
+    # identical on genuinely interlaced material. A control that silently has no effect
+    # sends anyone with stuttering output chasing the wrong thing, so it went. Taken
+    # while the package was unpublished and the node had never run in a graph -- that
+    # is the only reason a removal was acceptable. Append from here.
+    "TopazStudioDeinterlace": [
+        "model", "scale_factor", "fps",
+    ],
 }
 
 

@@ -1,0 +1,348 @@
+{
+  "id": "04-multi-pass-chain",
+  "revision": 0,
+  "last_node_id": 6,
+  "last_link_id": 5,
+  "nodes": [
+    {
+      "id": 1,
+      "type": "LoadImage",
+      "pos": [
+        0,
+        0
+      ],
+      "size": [
+        330,
+        50
+      ],
+      "flags": {},
+      "order": 0,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "IMAGE",
+          "type": "IMAGE",
+          "links": [
+            1
+          ],
+          "slot_index": 0
+        },
+        {
+          "name": "MASK",
+          "type": "MASK",
+          "links": [],
+          "slot_index": 1
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "LoadImage"
+      },
+      "widgets_values": [
+        "example.png"
+      ]
+    },
+    {
+      "id": 2,
+      "type": "TopazStudioUpscaleParams",
+      "pos": [
+        420,
+        -260
+      ],
+      "size": [
+        330,
+        410
+      ],
+      "flags": {},
+      "order": 1,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "params",
+          "type": "TOPAZ_UPSCALE_PARAMS",
+          "links": [
+            2
+          ],
+          "slot_index": 0
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "TopazStudioUpscaleParams"
+      },
+      "widgets_values": [
+        "Compressed / web video",
+        1.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        "default",
+        0.0,
+        true,
+        0,
+        false
+      ],
+      "title": "Params: repair pass"
+    },
+    {
+      "id": 3,
+      "type": "TopazStudioUpscaleStage",
+      "pos": [
+        420,
+        120
+      ],
+      "size": [
+        330,
+        222
+      ],
+      "flags": {},
+      "order": 2,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "params",
+          "type": "TOPAZ_UPSCALE_PARAMS",
+          "link": 2
+        },
+        {
+          "name": "previous_stage",
+          "type": "TOPAZ_UPSCALE_CHAIN",
+          "link": null
+        }
+      ],
+      "outputs": [
+        {
+          "name": "chain",
+          "type": "TOPAZ_UPSCALE_CHAIN",
+          "links": [
+            3
+          ],
+          "slot_index": 0
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "TopazStudioUpscaleStage"
+      },
+      "widgets_values": [
+        "Proteus (prob-4)",
+        2,
+        "factor",
+        1920,
+        1088,
+        "fit"
+      ],
+      "title": "Stage 1: repair"
+    },
+    {
+      "id": 4,
+      "type": "TopazStudioUpscaleParams",
+      "pos": [
+        840,
+        -260
+      ],
+      "size": [
+        330,
+        410
+      ],
+      "flags": {},
+      "order": 3,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "params",
+          "type": "TOPAZ_UPSCALE_PARAMS",
+          "links": [
+            4
+          ],
+          "slot_index": 0
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "TopazStudioUpscaleParams"
+      },
+      "widgets_values": [
+        "Pure upscale — clean source",
+        1.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        "default",
+        0.0,
+        true,
+        0,
+        false
+      ],
+      "title": "Params: detail pass"
+    },
+    {
+      "id": 5,
+      "type": "TopazStudioImageUpscale",
+      "pos": [
+        860,
+        120
+      ],
+      "size": [
+        330,
+        298
+      ],
+      "flags": {},
+      "order": 4,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "images",
+          "type": "IMAGE",
+          "link": 1
+        },
+        {
+          "name": "params",
+          "type": "TOPAZ_UPSCALE_PARAMS",
+          "link": 4
+        },
+        {
+          "name": "upscale_chain",
+          "type": "TOPAZ_UPSCALE_CHAIN",
+          "link": 3
+        },
+        {
+          "name": "engine",
+          "type": "TOPAZ_ENGINE",
+          "link": null
+        }
+      ],
+      "outputs": [
+        {
+          "name": "images",
+          "type": "IMAGE",
+          "links": [
+            5
+          ],
+          "slot_index": 0
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "TopazStudioImageUpscale"
+      },
+      "widgets_values": [
+        "Proteus (prob-4)",
+        "factor",
+        2,
+        "independent_images",
+        2048,
+        2048,
+        "fit"
+      ],
+      "title": "Stage 2: detail"
+    },
+    {
+      "id": 6,
+      "type": "SaveImage",
+      "pos": [
+        1280,
+        120
+      ],
+      "size": [
+        330,
+        76
+      ],
+      "flags": {},
+      "order": 5,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "images",
+          "type": "IMAGE",
+          "link": 5
+        }
+      ],
+      "outputs": [],
+      "properties": {
+        "Node name for S&R": "SaveImage"
+      },
+      "widgets_values": [
+        "topaz/chained_4x"
+      ]
+    }
+  ],
+  "links": [
+    [
+      1,
+      1,
+      0,
+      5,
+      0,
+      "IMAGE"
+    ],
+    [
+      2,
+      2,
+      0,
+      3,
+      0,
+      "TOPAZ_UPSCALE_PARAMS"
+    ],
+    [
+      3,
+      3,
+      0,
+      5,
+      2,
+      "TOPAZ_UPSCALE_CHAIN"
+    ],
+    [
+      4,
+      4,
+      0,
+      5,
+      1,
+      "TOPAZ_UPSCALE_PARAMS"
+    ],
+    [
+      5,
+      5,
+      0,
+      6,
+      0,
+      "IMAGE"
+    ]
+  ],
+  "groups": [
+    {
+      "id": 1,
+      "title": "Two models in one ffmpeg call: repair first, resolution second. The frames never leave the process in between.",
+      "bounding": [
+        -20,
+        -80,
+        1500,
+        60
+      ],
+      "color": "#3f789e",
+      "font_size": 20,
+      "flags": {}
+    }
+  ],
+  "config": {},
+  "extra": {
+    "ds": {
+      "scale": 0.85,
+      "offset": [
+        120,
+        200
+      ]
+    }
+  },
+  "version": 0.4
+}

@@ -21,6 +21,9 @@ mklink /J "F:\ComfyUI\custom_nodes\ComfyUI-TopazStudio" "D:\TopazLab-Studio\Comf
 Restart ComfyUI. Start with the **Topaz Diagnostics** node — it reports what was found
 and what is missing, without running a workflow.
 
+Then open one of the [example workflows](examples/) — `01_basic_upscale.json` is the
+smallest useful graph.
+
 ## Nodes
 
 | Node | What it does |
@@ -28,7 +31,7 @@ and what is missing, without running a workflow.
 | **Topaz Video Upscale** | IMAGE → IMAGE through `tvai_up`. Proteus, Rhea, Iris, Gaia, Nyx, Themis, Starlight Mini and the rest. |
 | **Topaz Frame Interpolation** | IMAGE → IMAGE through `tvai_fi`. Apollo, Aion, Chronos. Returns a different frame count by design. |
 | **Topaz Video Stabilize** | IMAGE → IMAGE through `tvai_cpe` + `tvai_stb`. Full-frame or auto-crop, rolling-shutter correction. |
-| **Topaz Deinterlace** | Dione models, with field order. Deinterlaces and optionally upscales in one pass. |
+| **Topaz Deinterlace** | Dione models. Deinterlaces and optionally upscales in one pass. No field-order control — see below. |
 | **Topaz Motion Deblur** | Themis. Resolution unchanged — Themis supports scale 1 only. |
 | **Topaz Parameter Estimate** | Analyses the footage with `tvai_pe` and outputs the tuning Topaz would pick. |
 | **Topaz Image Upscale** | Still images through `tvai_up`. Processes each picture independently by default, and supports the same multi-pass chain. |
@@ -115,6 +118,29 @@ Each stage takes its own `params`, so you can denoise hard on the first pass and
 on the second. Scale factors are validated against the model before anything runs: Topaz
 rejects e.g. `pnat-1` at 1x, and the node says so immediately rather than failing several
 seconds into a render.
+
+## Deinterlacing, and why there is no field-order control
+
+The **Topaz Deinterlace** node has no top-field-first / bottom-field-first setting. That
+is measured, not an oversight.
+
+It used to have one, sending a model parameter named `interlacing`. It did nothing:
+
+- `ffmpeg -h filter=tvai_up` documents exactly three parameter groups — Hyperion, SAM2
+  and Grain. There is no `interlacing`, and the Dione models take no parameters at all.
+- `parameters` is an FFmpeg dictionary option, so any key is accepted and the filter
+  drops the ones it does not recognise. An unknown parameter is taken in **silence**,
+  never rejected — which is why a clean run had been mistaken for confirmation.
+- On genuinely interlaced test material both settings produced identical output.
+  `setfield` and `setparams` ahead of the filter changed nothing either.
+
+The Dione models work it out themselves, and they do it well: on material combed 210x
+above the progressive floor, `ddv-3` removed 72% of the combing while the motion came
+through at exactly the speed it went in.
+
+A control that silently has no effect is worse than none — someone with stuttering output
+would spend an afternoon on it. `research/visual_check.py` keeps a check that fails if a
+future Topaz release starts documenting the parameter, at which point it can come back.
 
 ## Letting Topaz choose the parameters
 

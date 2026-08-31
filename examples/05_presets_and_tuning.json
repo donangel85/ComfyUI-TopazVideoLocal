@@ -1,0 +1,283 @@
+{
+  "id": "05-presets-and-tuning",
+  "revision": 0,
+  "last_node_id": 5,
+  "last_link_id": 4,
+  "nodes": [
+    {
+      "id": 1,
+      "type": "LoadImage",
+      "pos": [
+        0,
+        0
+      ],
+      "size": [
+        330,
+        50
+      ],
+      "flags": {},
+      "order": 0,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "IMAGE",
+          "type": "IMAGE",
+          "links": [
+            1
+          ],
+          "slot_index": 0
+        },
+        {
+          "name": "MASK",
+          "type": "MASK",
+          "links": [],
+          "slot_index": 1
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "LoadImage"
+      },
+      "widgets_values": [
+        "example.png"
+      ]
+    },
+    {
+      "id": 2,
+      "type": "TopazStudioUpscaleParams",
+      "pos": [
+        420,
+        -200
+      ],
+      "size": [
+        330,
+        410
+      ],
+      "flags": {},
+      "order": 1,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "params",
+          "type": "TOPAZ_UPSCALE_PARAMS",
+          "links": [
+            2
+          ],
+          "slot_index": 0
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "TopazStudioUpscaleParams"
+      },
+      "widgets_values": [
+        "AI-generated video",
+        1.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        "default",
+        0.0,
+        true,
+        0,
+        false
+      ]
+    },
+    {
+      "id": 3,
+      "type": "TopazStudioEngineSettings",
+      "pos": [
+        420,
+        320
+      ],
+      "size": [
+        330,
+        290
+      ],
+      "flags": {},
+      "order": 2,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "engine",
+          "type": "TOPAZ_ENGINE",
+          "links": [
+            3
+          ],
+          "slot_index": 0
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "TopazStudioEngineSettings"
+      },
+      "widgets_values": [
+        "-2",
+        1.0,
+        0,
+        false,
+        "pipe",
+        "cached",
+        false,
+        true,
+        "",
+        0.0,
+        false
+      ]
+    },
+    {
+      "id": 4,
+      "type": "TopazStudioImageUpscale",
+      "pos": [
+        860,
+        0
+      ],
+      "size": [
+        330,
+        298
+      ],
+      "flags": {},
+      "order": 3,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "images",
+          "type": "IMAGE",
+          "link": 1
+        },
+        {
+          "name": "params",
+          "type": "TOPAZ_UPSCALE_PARAMS",
+          "link": 2
+        },
+        {
+          "name": "upscale_chain",
+          "type": "TOPAZ_UPSCALE_CHAIN",
+          "link": null
+        },
+        {
+          "name": "engine",
+          "type": "TOPAZ_ENGINE",
+          "link": 3
+        }
+      ],
+      "outputs": [
+        {
+          "name": "images",
+          "type": "IMAGE",
+          "links": [
+            4
+          ],
+          "slot_index": 0
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "TopazStudioImageUpscale"
+      },
+      "widgets_values": [
+        "Proteus (prob-4)",
+        "factor",
+        2,
+        "independent_images",
+        2048,
+        2048,
+        "fit"
+      ]
+    },
+    {
+      "id": 5,
+      "type": "SaveImage",
+      "pos": [
+        1280,
+        0
+      ],
+      "size": [
+        330,
+        76
+      ],
+      "flags": {},
+      "order": 4,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "images",
+          "type": "IMAGE",
+          "link": 4
+        }
+      ],
+      "outputs": [],
+      "properties": {
+        "Node name for S&R": "SaveImage"
+      },
+      "widgets_values": [
+        "topaz/tuned"
+      ]
+    }
+  ],
+  "links": [
+    [
+      1,
+      1,
+      0,
+      4,
+      0,
+      "IMAGE"
+    ],
+    [
+      2,
+      2,
+      0,
+      4,
+      1,
+      "TOPAZ_UPSCALE_PARAMS"
+    ],
+    [
+      3,
+      3,
+      0,
+      4,
+      3,
+      "TOPAZ_ENGINE"
+    ],
+    [
+      4,
+      4,
+      0,
+      5,
+      0,
+      "IMAGE"
+    ]
+  ],
+  "groups": [
+    {
+      "id": 1,
+      "title": "Pick a profile: its values land in the sliders and edit_preset_values switches on, so you can adjust from there.",
+      "bounding": [
+        -20,
+        -80,
+        1500,
+        60
+      ],
+      "color": "#3f789e",
+      "font_size": 20,
+      "flags": {}
+    }
+  ],
+  "config": {},
+  "extra": {
+    "ds": {
+      "scale": 0.85,
+      "offset": [
+        120,
+        200
+      ]
+    }
+  },
+  "version": 0.4
+}

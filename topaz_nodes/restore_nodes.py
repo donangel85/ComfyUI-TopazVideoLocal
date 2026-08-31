@@ -10,9 +10,24 @@ Two model-specific facts, read from Topaz's own JSON metadata:
 * Themis (``thm-2``) supports **scale 1 only**. ``thm-1`` carries ``enabled: 0`` and is
   correctly absent from the catalog.
 * Dione models split by ``interlacedFrames``: ``1`` for genuinely interlaced sources
-  (Dione DV/TV/Dehalo), ``0`` for the progressive-input variants (Dione Robust). The
-  field order is a model *parameter* named ``interlacing`` — an int, 0 = top field
-  first, 1 = bottom field first — not a filter option of its own.
+  (Dione DV/TV/Dehalo), ``0`` for the progressive-input variants (Dione Robust). Used
+  here only to describe the model in the log.
+
+**There is no field-order control, and that is not an omission.** This node used to
+carry one, sending a model parameter named ``interlacing``. It did nothing:
+
+* ``ffmpeg -h filter=tvai_up`` documents exactly three parameter groups — Hyperion, SAM2
+  and Grain. No ``interlacing``, and no per-model parameters for Dione at all.
+* ``parameters`` is an ``AV_OPT_TYPE_DICT``, so ``av_dict_parse_string`` accepts any key
+  and the filter drops the ones it does not recognise. An unknown parameter is taken in
+  silence, never rejected — which is why a clean run had been mistaken for confirmation.
+* Measured both ways on genuinely interlaced material, the two settings produced
+  identical output to six decimal places. ``setfield``/``setparams`` ahead of the filter
+  changed nothing either: the field-order flag does not reach the model.
+
+The Dione models decide for themselves. ``research/visual_check.py`` keeps a check that
+fails if a future Topaz release starts documenting the parameter, at which point the
+control can come back.
 """
 
 from __future__ import annotations
@@ -86,12 +101,9 @@ class TopazDeinterlace:
                     "tooltip": "Dione DV/TV/Dehalo expect interlaced input; "
                                "Dione Robust variants take progressive input.",
                 }),
-                "field_order": (["top_first", "bottom_first"], {
-                    "default": "top_first",
-                    "tooltip": "Which field comes first in the source. Getting this "
-                               "wrong makes motion stutter. Ignored by models that do "
-                               "not take interlaced input.",
-                }),
+                # There was a field_order widget here. It did nothing: see the class
+                # docstring. Removed rather than left as a control that silently has no
+                # effect, which would send anyone with stuttering output chasing it.
                 "scale_factor": ([1, 2, 4], {
                     "default": 1,
                     "tooltip": "Deinterlacing alone is scale 1. Higher values "
@@ -114,7 +126,7 @@ class TopazDeinterlace:
     CATEGORY = CATEGORY
     DESCRIPTION = "Deinterlace with Topaz's Dione models, optionally upscaling as well."
 
-    def deinterlace(self, images, model, field_order, scale_factor, fps,
+    def deinterlace(self, images, model, scale_factor, fps,
                     params=None, engine=None):
         settings: EngineSettings = settings_from_input(engine)
         topaz = TopazEngine(settings)
@@ -142,20 +154,14 @@ class TopazDeinterlace:
         else:
             options.setdefault("estimate", 0)
 
-        interlaced = _is_interlaced_model(topaz.model_dir, chosen.short_code)
-        if interlaced:
-            extra["interlacing"] = 0 if field_order == "top_first" else 1
-        else:
-            logger.info("%s takes progressive input; field order not applied",
-                        chosen.label)
         if extra:
             options["parameters"] = render_parameters_dict(extra)
 
+        interlaced = _is_interlaced_model(topaz.model_dir, chosen.short_code)
         out_width, out_height = in_width * scale, in_height * scale
-        logger.info("deinterlace %dx%d -> %dx%d using %s (%s%s)",
+        logger.info("deinterlace %dx%d -> %dx%d using %s (%s)",
                     in_width, in_height, out_width, out_height, chosen.label,
-                    "interlaced input" if interlaced else "progressive input",
-                    f", {field_order}" if interlaced else "")
+                    "interlaced input" if interlaced else "progressive input")
 
         result = topaz.process(
             images, _RawSpec(FilterSpec(models.UPSCALE, options).render()),
