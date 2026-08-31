@@ -40,13 +40,6 @@ class TopazUpscaleStage:
                 "model": (model_choices(models.UPSCALE), {
                     "default": default_model(models.UPSCALE, "prob-4"),
                 }),
-                "scale_mode": (["factor", "target_size"], {
-                    "default": "factor",
-                    "tooltip": "factor: an exact integer multiple, the most predictable "
-                               "option. target_size: upscale far enough to cover the "
-                               "size below, then resample this stage's output to it "
-                               "before the next stage sees it.",
-                }),
                 "scale_factor": ([1, 2, 3, 4], {
                     "default": 2,
                     "tooltip": "Used when scale_mode is 'factor'. Scales multiply along "
@@ -56,6 +49,17 @@ class TopazUpscaleStage:
                 }),
             },
             "optional": {
+                # scale_mode reads better above scale_factor, but it cannot go there.
+                # ComfyUI maps a saved workflow's widgets_values onto this list by
+                # position, and this node shipped with exactly two widgets, so anything
+                # new has to come after both of them.
+                "scale_mode": (["factor", "target_size"], {
+                    "default": "factor",
+                    "tooltip": "factor: an exact integer multiple, the most predictable "
+                               "option. target_size: upscale far enough to cover the "
+                               "size below, then resample this stage's output to it "
+                               "before the next stage sees it.",
+                }),
                 "target_width": ("INT", {
                     "default": 1920, "min": 16, "max": 16384, "step": 8,
                     "tooltip": "Used when scale_mode is 'target_size'. Connect a Topaz "
@@ -88,7 +92,7 @@ class TopazUpscaleStage:
     DESCRIPTION = ("One pass of a multi-pass Topaz upscale. Chain several of these, then "
                    "connect the last to Topaz Video Upscale.")
 
-    def build(self, model, scale_mode, scale_factor, target_width=1920,
+    def build(self, model, scale_factor, scale_mode="factor", target_width=1920,
               target_height=1088, fit_mode=FIT, params=None, previous_stage=None):
         resolved = models.resolve(model_dir_or_none(), model, models.UPSCALE)
         short_code = resolved.short_code if resolved else str(model)

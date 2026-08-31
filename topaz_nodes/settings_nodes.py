@@ -153,17 +153,6 @@ class TopazUpscaleParams:
                                "mode. Change this before picking the profile, or press "
                                "'Reload preset into sliders' afterwards.",
                 }),
-                "edit_preset_values": ("BOOLEAN", {
-                    "default": False,
-                    "label_on": "sliders (edited)",
-                    "label_off": "preset as-is",
-                    "tooltip": "Which values actually run. Off: the profile is applied "
-                               "as authored and the sliders are ignored. On: the "
-                               "sliders are used, so your adjustments count.\n\n"
-                               "Picking a profile in the browser fills the sliders and "
-                               "turns this on for you. Turn it off to go back to the "
-                               "untouched preset — your slider values are kept.",
-                }),
                 "preblur": rel("Negative for aliasing/moire in the source, positive for "
                                "lens blur."),
                 "noise": rel("Remove ISO noise. Too high also removes fine detail."),
@@ -196,6 +185,21 @@ class TopazUpscaleParams:
                                "above automatically. 0 disables estimation and uses the "
                                "values as given.",
                 }),
+                # Last on purpose. ComfyUI maps a saved workflow's widgets_values onto
+                # this list by position, so a widget inserted anywhere but the end
+                # shifts every later value in every workflow already saved. This one
+                # belongs beside `profile` by meaning and cannot go there.
+                "edit_preset_values": ("BOOLEAN", {
+                    "default": False,
+                    "label_on": "sliders (edited)",
+                    "label_off": "preset as-is",
+                    "tooltip": "Which values actually run. Off: the profile at the top "
+                               "is applied as authored and the sliders are ignored. On: "
+                               "the sliders are used, so your adjustments count.\n\n"
+                               "Picking a profile in the browser fills the sliders and "
+                               "turns this on for you. Turn it off to go back to the "
+                               "untouched preset — your slider values are kept.",
+                }),
             },
         }
 
@@ -204,10 +208,10 @@ class TopazUpscaleParams:
     FUNCTION = "build"
     CATEGORY = CATEGORY
 
-    def build(self, profile, profile_strength, edit_preset_values, preblur, noise,
+    def build(self, profile, profile_strength, preblur, noise,
               details, halo, blur, compression, prenoise=0.0, grain=0.0,
               grain_size=0.0, grain_type="default", blend=0.0, color_correction=True,
-              auto_estimate_frames=0):
+              auto_estimate_frames=0, edit_preset_values=False):
         chosen = profiles.resolve(profile, model_dir_or_none())
         # edit_preset_values is what the browser turns on after copying a preset into
         # the sliders. Without it the profile wins and the sliders are ignored, which is

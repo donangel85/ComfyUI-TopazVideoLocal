@@ -175,7 +175,7 @@ Picking a profile in the browser **copies its numbers straight into the sliders*
 can see what the preset actually does and change any of it. `profile_strength` is applied
 while copying, so what you end up looking at is what will run.
 
-Alongside the dropdown sits `edit_preset_values`, which decides who wins:
+`edit_preset_values`, the last widget on the node, decides who wins:
 
 | `edit_preset_values` | What runs |
 |---|---|
@@ -185,6 +185,10 @@ Alongside the dropdown sits `edit_preset_values`, which decides who wins:
 Picking a profile turns it **on** for you, because the sliders now hold that preset's
 values and adjusting them is the point. Turn it off to go back to the untouched preset —
 your slider values are kept, just not used, so you can flip between the two and compare.
+
+It sits at the bottom rather than next to `profile` where it belongs by meaning. ComfyUI
+maps a saved workflow's widget values onto the node by position, so a widget added
+anywhere but the end shifts every later value in every workflow already saved.
 
 Two buttons round it out:
 
@@ -308,6 +312,33 @@ Layout:
 | `topaz_studio/` | Backend. Knows Topaz, knows nothing about ComfyUI, testable on its own. |
 | `topaz_nodes/` | The ComfyUI layer. Thin: gather widget values, call the backend, turn a failure into a message worth reading. |
 | `web/` | Frontend extension. Only the Upscale Params buttons — everything else works without it. |
+
+### Adding a widget to an existing node
+
+**Append it. Never insert it.**
+
+ComfyUI stores a node's widget values in a saved workflow as a plain array and maps them
+back by position. A widget added anywhere but the end shifts every later value in every
+workflow already saved, and it surfaces as a validation error naming widgets nobody
+touched:
+
+```
+Failed to convert an input value to a FLOAT value: grain_size, default
+Value not in list: grain_type: 0 not in ['default', 'silver_rich', ...]
+```
+
+That is `grain_size` holding `grain_type`'s old value and `grain_type` holding `blend`'s
+— everything one slot out.
+
+Widgets are created required-first, then optional, in declaration order. Link-typed
+inputs (`IMAGE`, `TOPAZ_ENGINE`, …) are sockets, not widgets, and do not take up a
+position. `tests/test_widget_order.py` holds the published order for each node and fails
+if it changes; a failure there means saved workflows will break, not that the baseline
+needs updating.
+
+This is why `edit_preset_values` sits at the bottom of Topaz Upscale Params and
+`scale_mode` below `scale_factor` on Topaz Upscale Stage, rather than next to what they
+govern.
 
 ## Licence
 
