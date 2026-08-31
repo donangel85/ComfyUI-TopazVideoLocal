@@ -21,6 +21,7 @@ import json
 from dataclasses import dataclass, field
 from pathlib import Path
 
+from . import parameters
 from .logging_util import get_logger
 
 logger = get_logger()
@@ -53,11 +54,16 @@ class Profile:
     source: str = "builtin"
 
     def resolve(self, strength: float = 1.0) -> dict:
-        """Parameter dict for the filter, with every tuning value scaled by *strength*."""
+        """Parameter dict for the filter, with every tuning value scaled by *strength*.
+
+        Clamped per parameter rather than to a single -1..1 for all of them: ``prenoise``
+        runs 0..0.1 and ``gsize`` 0..5, so one shared range would let a profile emit a
+        value the filter rejects and a widget refuses to hold.
+        """
         scaled = {}
         for key, value in self.options.items():
             if isinstance(value, (int, float)):
-                scaled[key] = max(-1.0, min(1.0, float(value) * float(strength)))
+                scaled[key] = parameters.clamp(key, float(value) * float(strength))
             else:
                 scaled[key] = value
         scaled["estimate"] = int(self.estimate)

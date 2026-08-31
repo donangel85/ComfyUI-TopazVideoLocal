@@ -17,6 +17,7 @@ import tempfile
 import threading
 from pathlib import Path
 
+from . import parameters
 from .logging_util import get_logger
 
 logger = get_logger()
@@ -27,29 +28,10 @@ USER_PRESETS_PATH = Path(__file__).resolve().parent.parent / "user_presets.json"
 # Topaz's own ("Topaz: ").
 PREFIX = "My: "
 
-# The tuning values a preset may carry. Anything else in a submitted payload is dropped
-# rather than trusted — this is written by an HTTP route.
-_NUMERIC_KEYS = frozenset({
-    "preblur", "noise", "details", "halo", "blur", "compression",
-    "prenoise", "grain", "gsize", "blend",
-})
-_RANGES = {
-    "prenoise": (0.0, 0.1),
-    "grain": (0.0, 1.0),
-    "gsize": (0.0, 5.0),
-    "blend": (0.0, 1.0),
-}
-_DEFAULT_RANGE = (-1.0, 1.0)
-
 MAX_NAME_LENGTH = 64
 MAX_PRESETS = 200
 
 _lock = threading.Lock()
-
-
-def _clamp(key: str, value) -> float:
-    low, high = _RANGES.get(key, _DEFAULT_RANGE)
-    return max(low, min(high, float(value)))
 
 
 def sanitize_name(name: str) -> str:
@@ -64,16 +46,8 @@ def sanitize_name(name: str) -> str:
 
 
 def sanitize_options(options) -> dict:
-    """Keep only known tuning keys, coerced to float and clamped to their range."""
-    clean = {}
-    for key, value in (options or {}).items():
-        if key not in _NUMERIC_KEYS:
-            continue
-        try:
-            clean[key] = _clamp(key, value)
-        except (TypeError, ValueError):
-            continue
-    return clean
+    """Keep only known tuning keys, coerced to float and clamped to their own range."""
+    return parameters.clamp_all(options)
 
 
 def load() -> list[dict]:

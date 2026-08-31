@@ -6,7 +6,7 @@ widgets, while everything Topaz can do is still reachable by attaching a setting
 
 from __future__ import annotations
 
-from ..topaz_studio import config, profiles
+from ..topaz_studio import config, parameters, profiles
 from ..topaz_studio.engine import EngineSettings
 from ..topaz_studio.logging_util import get_logger
 
@@ -132,9 +132,12 @@ class TopazUpscaleParams:
 
     @classmethod
     def INPUT_TYPES(cls):
-        def rel(tooltip):
-            return ("FLOAT", {"default": 0.0, "min": -1.0, "max": 1.0, "step": 0.01,
-                              "tooltip": tooltip})
+        # Limits come from topaz_studio.parameters so they cannot drift from what
+        # profiles and the preset routes clamp to. A widget whose range disagrees with
+        # them refuses a value the preset legitimately holds, and the whole prompt
+        # fails: "Value 0.3 bigger than max of 0.1: prenoise".
+        def rel(tooltip, key="preblur"):
+            return parameters.widget_spec(key, tooltip)
 
         return {
             "required": {
@@ -162,19 +165,17 @@ class TopazUpscaleParams:
                 "compression": rel("Reduce blockiness and mosquito noise from codecs."),
             },
             "optional": {
-                "prenoise": ("FLOAT", {"default": 0.0, "min": 0.0, "max": 0.1,
-                                       "step": 0.005,
-                                       "tooltip": "Noise added before processing."}),
-                "grain": ("FLOAT", {"default": 0.0, "min": 0.0, "max": 1.0, "step": 0.01,
-                                    "tooltip": "Film grain added to the output."}),
-                "grain_size": ("FLOAT", {"default": 0.0, "min": 0.0, "max": 5.0,
-                                         "step": 0.1,
-                                         "tooltip": "Size of the added grain."}),
+                "prenoise": parameters.widget_spec(
+                    "prenoise", "Noise added before processing.", step=0.005),
+                "grain": parameters.widget_spec(
+                    "grain", "Film grain added to the output."),
+                # The filter calls this gsize; the widget spells it out.
+                "grain_size": parameters.widget_spec(
+                    "gsize", "Size of the added grain.", step=0.1),
                 "grain_type": (["default", "silver_rich", "gaussian", "grey"],
                                {"default": "default"}),
-                "blend": ("FLOAT", {"default": 0.0, "min": 0.0, "max": 1.0, "step": 0.01,
-                                    "tooltip": "Blend the original back into the "
-                                               "result."}),
+                "blend": parameters.widget_spec(
+                    "blend", "Blend the original back into the result."),
                 "color_correction": ("BOOLEAN", {
                     "default": True,
                     "tooltip": "Extra colour correction where the model needs it.",

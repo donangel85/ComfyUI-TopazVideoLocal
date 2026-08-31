@@ -11,7 +11,7 @@ importing.
 
 from __future__ import annotations
 
-from ..topaz_studio import profiles, user_profiles
+from ..topaz_studio import parameters, profiles, user_profiles
 from ..topaz_studio.logging_util import get_logger
 
 from .common import model_dir_or_none
@@ -23,16 +23,22 @@ PREFIX = "/topaz_studio"
 # The six tuning sliders, in the order Topaz's own parameter list uses. The frontend
 # maps these onto widgets by name, so they have to match the widget names in
 # TopazUpscaleParams exactly.
-SLIDER_KEYS = ("preblur", "noise", "details", "halo", "blur", "compression")
-EXTRA_KEYS = ("prenoise", "grain", "gsize", "blend")
+SLIDER_KEYS = parameters.TUNING
+EXTRA_KEYS = tuple(k for k in parameters.RANGES if k not in SLIDER_KEYS)
 
 
 def _profile_payload(profile, strength: float = 1.0) -> dict:
-    """One profile as the frontend needs it: resolved numbers, ready for the widgets."""
+    """One profile as the frontend needs it: resolved numbers, ready for the widgets.
+
+    Clamped again here even though Profile.resolve already does it. This is the last
+    point before a number becomes a widget value, and a widget that refuses its own
+    contents fails the whole prompt with a message pointing at a parameter nobody
+    touched: ``Value 0.3 bigger than max of 0.1: prenoise``.
+    """
     resolved = profile.resolve(strength)
-    values = {key: float(resolved.get(key, 0.0)) for key in SLIDER_KEYS}
-    values.update({key: float(resolved.get(key, 0.0)) for key in EXTRA_KEYS
-                   if key in resolved})
+    values = {key: parameters.clamp(key, resolved.get(key, 0.0)) for key in SLIDER_KEYS}
+    values.update({key: parameters.clamp(key, resolved.get(key, 0.0))
+                   for key in EXTRA_KEYS if key in resolved})
     return {
         "label": profiles.label_for(profile),
         "name": profile.name,

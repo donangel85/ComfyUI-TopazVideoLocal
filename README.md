@@ -340,6 +340,21 @@ This is why `edit_preset_values` sits at the bottom of Topaz Upscale Params and
 `scale_mode` below `scale_factor` on Topaz Upscale Stage, rather than next to what they
 govern.
 
+### Parameter ranges
+
+`topaz_studio/parameters.py` holds the valid range of every `tvai_up` tuning parameter,
+read from the filter's own help text. Six of them run -1..1, but `prenoise` runs 0..0.1,
+`gsize` 0..5, `grain` and `blend` 0..1.
+
+Everything derives from that one table: the widget limits, the clamping in
+`Profile.resolve`, the sanitising of saved presets, and the values the preset route hands
+the browser. Restating a limit anywhere else invites them to drift apart, and a value
+outside a widget's range fails the whole prompt:
+
+```
+Value 0.3 bigger than max of 0.1: prenoise
+```
+
 ## Licence
 
 MIT — see [LICENSE](LICENSE). Credits and prior art: [NOTICE.md](NOTICE.md).

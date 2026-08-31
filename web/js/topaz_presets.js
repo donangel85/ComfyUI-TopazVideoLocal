@@ -40,6 +40,15 @@ function widgetValue(node, name, fallback = 0) {
 function setWidget(node, name, value) {
   const found = widget(node, name);
   if (!found) return false;
+  // Hold to the widget's own limits. The server clamps too, but a widget that ends up
+  // outside its range fails the entire prompt with a message pointing at a parameter
+  // nobody touched -- "Value 0.3 bigger than max of 0.1: prenoise" -- so it is worth
+  // catching on this side as well.
+  if (typeof value === "number" && Number.isFinite(value)) {
+    const { min, max } = found.options || {};
+    if (typeof min === "number") value = Math.max(min, value);
+    if (typeof max === "number") value = Math.min(max, value);
+  }
   found.value = value;
   return true;
 }
