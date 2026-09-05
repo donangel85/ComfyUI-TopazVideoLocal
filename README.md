@@ -1,5 +1,8 @@
 # ComfyUI-TopazVideoLocal
 
+[![tests](https://github.com/donangel85/ComfyUI-TopazVideoLocal/actions/workflows/tests.yml/badge.svg)](https://github.com/donangel85/ComfyUI-TopazVideoLocal/actions/workflows/tests.yml)
+[![licence: MIT](https://img.shields.io/badge/licence-MIT-blue.svg)](LICENSE)
+
 Topaz Video AI nodes for ComfyUI. Everything runs locally through your own Topaz Video
 installation — no cloud, no API keys, no uploads.
 
