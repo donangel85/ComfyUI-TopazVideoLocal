@@ -25,6 +25,16 @@ What is checked, and why each one has bitten:
 Like ``test_widget_order.py`` this imports the node layer, which the rest of the suite
 avoids. No ComfyUI is needed at import time, and the contract being checked is a ComfyUI
 one, so this is the only place it can be checked.
+
+**Reproducing "no Topaz installed" on a machine that has it.** Set ``model_dir`` in
+``config.json`` to a path that does not exist and run the suite; put it back afterwards.
+Every model dropdown then collapses to a placeholder, which is what CI sees, and two of
+these tests failed there while passing here until that difference was reproduced.
+
+Patching ``topaz_video.discovery`` from a pytest plugin does **not** work and looks like
+it does: this file loads the package under its own module name, so it gets a private copy
+of the whole backend that the patch never touched. It reported a clean run while the
+tests it was meant to constrain went on reading the real installation.
 """
 
 import importlib.util
@@ -55,10 +65,24 @@ CORE_NODES = {
 # example fail the moment a Diagnostics report was wired into a Preview as Text.
 WILDCARD_TYPES = {"*", "ANY", "any"}
 
-# What model_choices() returns when no Topaz installation is present. The catalogue is
-# read from Topaz's own files, so on a machine without it every model dropdown holds
-# this one entry and the values in the examples cannot be checked against it.
-NO_INSTALL = "<no Topaz Video installation found>"
+
+def is_placeholder(choices) -> bool:
+    """Whether a dropdown holds a stand-in rather than real choices.
+
+    Model lists are built from Topaz's own metadata files, so on a machine without a
+    Topaz installation every model dropdown collapses to a single apologetic entry and
+    there is nothing to check the examples against.
+
+    Recognised by shape — one entry, in angle brackets — rather than by matching a
+    string. There are two of these, with different wording (``common._NO_MODELS`` and
+    ``restore_nodes._NO_MODELS``), and the first version of this check knew about one of
+    them. Locally that made no difference, because this machine has Topaz; CI has none,
+    and failed on the two examples that use the restore nodes. A rule about the shape
+    cannot go stale when somebody adds a third.
+    """
+    return (isinstance(choices, list) and len(choices) == 1
+            and isinstance(choices[0], str)
+            and choices[0].startswith("<") and choices[0].endswith(">"))
 
 
 @pytest.fixture(scope="module")
@@ -155,7 +179,7 @@ def test_widget_values_fit_the_nodes(workflows, name, node_classes):
             kind = declaration[0]
             options = declaration[1] if len(declaration) > 1 else {}
             if isinstance(kind, (list, tuple)):
-                if NO_INSTALL in kind:
+                if is_placeholder(kind):
                     continue  # dropdown comes from a Topaz install that is not here
                 if value not in kind:
                     problems.append(f"{where}.{widget}: {value!r} is not one of "
