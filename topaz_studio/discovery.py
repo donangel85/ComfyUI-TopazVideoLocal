@@ -82,8 +82,15 @@ def _candidate_roots(explicit: str | None = None):
         if value:
             yield Path(value)
 
-    if os.name == "nt":
-        yield from _registry_roots()
+    # Everything below this point is a Windows location. Automatic detection is
+    # Windows-only, deliberately: it is the only platform this has ever run on, and
+    # guessing at an .app bundle nobody has opened would be worse than saying so. On
+    # anything else the explicit path and the environment variables above are the way
+    # in, and find_install's message says that.
+    if os.name != "nt":
+        return
+
+    yield from _registry_roots()
 
     for env_var in ("ProgramFiles", "ProgramW6432", "ProgramFiles(x86)"):
         base = os.environ.get(env_var)
@@ -212,12 +219,18 @@ def find_install(explicit_path: str | None = None, *, refresh: bool = False) -> 
         _find_cached.cache_clear()
     install = _find_cached(explicit_path or None)
     if install is None:
-        searched = "\n  ".join(str(p) for p in _candidate_roots(explicit_path))
+        searched = "\n  ".join(str(p) for p in _candidate_roots(explicit_path)) or "-"
+        platform_note = "" if os.name == "nt" else (
+            "\nNote: automatic detection is implemented for Windows only, so on this "
+            "platform the path has to be given. Point it at the directory that holds "
+            "Topaz's own ffmpeg binary."
+        )
         raise TopazNotFoundError(
             "No usable Topaz Video installation found. A directory qualifies only if it "
             "contains an ffmpeg that provides the 'tvai_up' filter.\n"
             "Set the path explicitly in the Topaz Engine Settings node, or via the "
-            "TOPAZ_STUDIO_VIDEO_DIR environment variable.\n"
+            "TOPAZ_STUDIO_VIDEO_DIR environment variable."
+            f"{platform_note}\n"
             f"Searched:\n  {searched}"
         )
     return install

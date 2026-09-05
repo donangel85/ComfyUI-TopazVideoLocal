@@ -1,0 +1,53 @@
+# Publish to the ComfyUI Registry.
+#
+# Deliberately manual-only (`workflow_dispatch`). The usual setup fires this on every
+# push that touches pyproject.toml, which is fine once a package has a publisher and a
+# version history, and a trap before it has either — a stray edit would publish a first
+# release nobody meant to make. Change the trigger when that stops being true.
+#
+# Two things must exist before this can work, and neither can be filled in from here:
+#
+#   1. `[tool.comfy] PublisherId` in pyproject.toml -- the publisher name from
+#      registry.comfy.org, created with a GitHub login.
+#   2. A repository secret named REGISTRY_ACCESS_TOKEN, from the same place.
+#
+# Without them the run fails on the publish step with an authentication error, which is
+# the right way round: nothing is published by accident.
+name: publish
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Refuse to publish an unfinished pyproject
+        # The placeholders below are what the file ships with. Publishing with them in
+        # place would register a node pack pointing at a repository that does not exist.
+        run: |
+          python - <<'PY'
+          import re, sys, pathlib
+          text = pathlib.Path("pyproject.toml").read_text(encoding="utf-8")
+          problems = []
+          if "USERNAME" in text:
+              problems.append("[project.urls] Repository still says USERNAME")
+          if re.search(r'PublisherId\s*=\s*""', text):
+              problems.append("[tool.comfy] PublisherId is empty")
+          if problems:
+              print("Not ready to publish:")
+              for p in problems:
+                  print("  -", p)
+              sys.exit(1)
+          print("pyproject.toml looks publishable")
+          PY
+
+      - name: Publish
+        uses: Comfy-Org/publish-node-action@v1
+        with:
+          personal_access_token: ${{ secrets.REGISTRY_ACCESS_TOKEN }}

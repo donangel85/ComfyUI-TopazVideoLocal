@@ -441,8 +441,22 @@ python -m pytest
 ```
 
 The tests cover the command builder, error classification, the model catalog, frame
-conversion, the resolution arithmetic and the user-preset store. They need neither Topaz
-nor ComfyUI: `topaz_studio` is deliberately free of ComfyUI imports.
+conversion, the resolution arithmetic, installation discovery, the user-preset store and
+the shipped example workflows. They need neither Topaz nor ComfyUI: `topaz_studio` is
+deliberately free of ComfyUI imports, and the two files that do reach into the node layer
+only read `INPUT_TYPES`. CI runs them on Windows and Linux, Python 3.10 to 3.13.
+
+What the suite cannot see is whether **ComfyUI** agrees with these node definitions —
+and that gap is where every shipped bug has come from, because ComfyUI maps a saved
+workflow's widget values onto a node **by position**. With ComfyUI running, ask it:
+
+```bash
+python research/object_info_check.py --url http://127.0.0.1:8188
+```
+
+It compares `/object_info` — exactly what the frontend is handed — against the widget-order
+baselines, checks every value in `examples/*.json` against ComfyUI's own ranges and
+choice lists, and confirms the preset routes answer. Read-only; it runs no prompts.
 
 Layout:
 
@@ -493,6 +507,19 @@ outside a widget's range fails the whole prompt:
 ```
 Value 0.3 bigger than max of 0.1: prenoise
 ```
+
+### Publishing
+
+Two placeholders in `pyproject.toml` have to be filled in first, and neither can be
+guessed: the GitHub account in `[project.urls] Repository`, and `[tool.comfy]
+PublisherId`, which is the publisher name created at
+[registry.comfy.org](https://registry.comfy.org). A repository secret named
+`REGISTRY_ACCESS_TOKEN` comes from the same place.
+
+`.github/workflows/publish.yml` is **manual-trigger only** and refuses to run while
+either placeholder is still there. The usual setup publishes on every push that touches
+`pyproject.toml`, which is a reasonable default once a package has a version history and
+a trap before it has one.
 
 ## Licence
 

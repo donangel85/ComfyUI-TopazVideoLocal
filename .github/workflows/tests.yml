@@ -1,0 +1,52 @@
+# The unit suite, on every push and pull request.
+#
+# It runs without Topaz and without ComfyUI on purpose: `topaz_studio` has no ComfyUI
+# imports, and the two test files that do reach into the node layer only read
+# INPUT_TYPES, which needs neither. That is what makes CI possible at all — nothing here
+# could run a Topaz filter.
+#
+# What CI cannot check is in research/, outside this repository: the integration scripts
+# that drive the real installation, the picture measurements, and object_info_check.py,
+# which asks a running ComfyUI whether it agrees with these node definitions. Those stay
+# manual, on a machine that has Topaz.
+#
+# Linux is in the matrix even though the package supports Windows only. The backend is
+# meant to be plain logic, and a Windows assumption creeping into it should fail here
+# rather than on somebody's Mac. tests/test_discovery.py states the platform it means
+# instead of inheriting the runner's.
+name: tests
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  pytest:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-latest, ubuntu-latest]
+        python: ["3.10", "3.12", "3.13"]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
+
+      - name: Install
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install numpy pytest
+
+      - name: Run the suite
+        run: python -m pytest -q
+
+      - name: The node layer imports without ComfyUI
+        # A node that fails to import does not appear in ComfyUI's menu at all, and the
+        # only trace is a line in a startup log nobody is watching.
+        run: |
+          python -c "import importlib.util, sys; spec = importlib.util.spec_from_file_location('cts', '__init__.py', submodule_search_locations=['.']); m = importlib.util.module_from_spec(spec); sys.modules['cts'] = m; spec.loader.exec_module(m); print(len(m.NODE_CLASS_MAPPINGS), 'nodes'); assert len(m.NODE_CLASS_MAPPINGS) == len(m.NODE_DISPLAY_NAME_MAPPINGS)"
