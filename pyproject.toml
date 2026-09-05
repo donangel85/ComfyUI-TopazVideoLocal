@@ -24,8 +24,8 @@ Repository = "https://github.com/donangel85/ComfyUI-TopazVideoLocal"
 # REGISTRY_ACCESS_TOKEN repository secret.
 PublisherId = "donangel85"
 DisplayName = "ComfyUI-TopazVideoLocal"
-# Optional: a URL to a square icon, 400x400 or smaller.
-Icon = ""
+# Square, 400x400 or smaller, and a URL rather than a path -- the registry fetches it.
+Icon = "https://raw.githubusercontent.com/donangel85/ComfyUI-TopazVideoLocal/main/images/icon.png"
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
