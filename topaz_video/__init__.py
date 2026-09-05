@@ -1,4 +1,4 @@
-"""Backend for the ComfyUI Topaz Studio nodes.
+"""Backend for the ComfyUI Topaz Video Local nodes.
 
 Deliberately free of ComfyUI imports so it can be tested without a running ComfyUI.
 """

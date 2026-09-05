@@ -11,14 +11,14 @@ importing.
 
 from __future__ import annotations
 
-from ..topaz_studio import parameters, profiles, user_profiles
-from ..topaz_studio.logging_util import get_logger
+from ..topaz_video import parameters, profiles, user_profiles
+from ..topaz_video.logging_util import get_logger
 
 from .common import model_dir_or_none
 
 logger = get_logger()
 
-PREFIX = "/topaz_studio"
+PREFIX = "/topaz_video_local"
 
 # The six tuning sliders, in the order Topaz's own parameter list uses. The frontend
 # maps these onto widgets by name, so they have to match the widget names in

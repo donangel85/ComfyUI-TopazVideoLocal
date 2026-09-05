@@ -10,7 +10,7 @@ import sys
 from pathlib import Path
 
 
-from topaz_studio.command import (  # noqa: E402
+from topaz_video.command import (  # noqa: E402
     FFmpegCommand,
     build_filter,
     file_input_args,

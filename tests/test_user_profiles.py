@@ -9,7 +9,7 @@ import json
 
 import pytest
 
-from topaz_studio import profiles, user_profiles
+from topaz_video import profiles, user_profiles
 
 
 @pytest.fixture(autouse=True)

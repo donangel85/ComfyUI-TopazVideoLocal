@@ -22,8 +22,8 @@ logger = get_logger()
 _APP_SUBDIR = os.path.join("Topaz Labs LLC", "Topaz Video")
 _MODEL_SUBDIR = os.path.join("Topaz Labs LLC", "Topaz Video", "models")
 
-_ENV_INSTALL_VARS = ("TOPAZ_STUDIO_VIDEO_DIR", "TVAI_DIR", "TOPAZ_VIDEO_DIR")
-_ENV_MODEL_VARS = ("TOPAZ_STUDIO_MODEL_DIR", "TVAI_MODEL_DIR", "TVAI_MODEL_DATA_DIR")
+_ENV_INSTALL_VARS = ("TOPAZ_VIDEO_LOCAL_DIR", "TVAI_DIR", "TOPAZ_VIDEO_DIR")
+_ENV_MODEL_VARS = ("TOPAZ_VIDEO_LOCAL_MODEL_DIR", "TVAI_MODEL_DIR", "TVAI_MODEL_DATA_DIR")
 
 _SUBPROCESS_FLAGS = 0
 if os.name == "nt":  # keep console windows from flashing up during probes
@@ -229,7 +229,7 @@ def find_install(explicit_path: str | None = None, *, refresh: bool = False) -> 
             "No usable Topaz Video installation found. A directory qualifies only if it "
             "contains an ffmpeg that provides the 'tvai_up' filter.\n"
             "Set the path explicitly in the Topaz Engine Settings node, or via the "
-            "TOPAZ_STUDIO_VIDEO_DIR environment variable."
+            "TOPAZ_VIDEO_LOCAL_DIR environment variable."
             f"{platform_note}\n"
             f"Searched:\n  {searched}"
         )

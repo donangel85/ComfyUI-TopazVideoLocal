@@ -4,7 +4,7 @@ import json
 
 import pytest
 
-from topaz_studio import profiles
+from topaz_video import profiles
 
 
 @pytest.fixture(autouse=True)

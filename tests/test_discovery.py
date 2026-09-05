@@ -24,8 +24,8 @@ from pathlib import Path
 
 import pytest
 
-from topaz_studio import discovery
-from topaz_studio.errors import TopazNotFoundError
+from topaz_video import discovery
+from topaz_video.errors import TopazNotFoundError
 
 
 FFMPEG_VERSION = (
@@ -157,7 +157,7 @@ def test_the_not_found_message_names_a_way_forward(tmp_path, monkeypatch,
         discovery.find_install(str(tmp_path / "nowhere"))
     text = str(caught.value)
     assert "tvai_up" in text, "the message has to say what actually qualifies"
-    assert "TOPAZ_STUDIO_VIDEO_DIR" in text, "and how to point it somewhere by hand"
+    assert "TOPAZ_VIDEO_LOCAL_DIR" in text, "and how to point it somewhere by hand"
     assert "Searched:" in text
 
 
@@ -166,7 +166,7 @@ def test_the_not_found_message_names_a_way_forward(tmp_path, monkeypatch,
 def test_the_explicit_path_wins(tmp_path, monkeypatch, no_environment):
     chosen = make_install(tmp_path / "chosen")
     other = make_install(tmp_path / "other")
-    monkeypatch.setenv("TOPAZ_STUDIO_VIDEO_DIR", str(other))
+    monkeypatch.setenv("TOPAZ_VIDEO_LOCAL_DIR", str(other))
     monkeypatch.setattr(discovery, "_run", fake_run())
     assert discovery.find_install(str(chosen)).root == chosen
 
@@ -175,7 +175,7 @@ def test_the_environment_variables_are_honoured_in_order(tmp_path, monkeypatch,
                                                          no_environment):
     first = make_install(tmp_path / "first")
     second = make_install(tmp_path / "second")
-    monkeypatch.setenv("TOPAZ_STUDIO_VIDEO_DIR", str(first))
+    monkeypatch.setenv("TOPAZ_VIDEO_LOCAL_DIR", str(first))
     monkeypatch.setenv("TVAI_DIR", str(second))
     monkeypatch.setattr(discovery, "_run", fake_run())
     assert discovery.find_install().root == first
@@ -185,7 +185,7 @@ def test_a_broken_environment_variable_does_not_stop_the_search(tmp_path, monkey
                                                                 no_environment):
     """Pointing the variable at a stale path must fall through, not fail outright."""
     real = make_install(tmp_path / "real")
-    monkeypatch.setenv("TOPAZ_STUDIO_VIDEO_DIR", str(tmp_path / "deleted"))
+    monkeypatch.setenv("TOPAZ_VIDEO_LOCAL_DIR", str(tmp_path / "deleted"))
     monkeypatch.setenv("TVAI_DIR", str(real))
     monkeypatch.setattr(discovery, "_run", fake_run())
     assert discovery.find_install().root == real
@@ -300,7 +300,7 @@ def test_macos_finds_nothing_on_its_own(monkeypatch, no_environment, posix):
     looked for.
 
     So the honest statement is: macOS is not unsupported by accident of an untested code
-    path, it is unimplemented. The explicit path and TOPAZ_STUDIO_VIDEO_DIR work, and
+    path, it is unimplemented. The explicit path and TOPAZ_VIDEO_LOCAL_DIR work, and
     nothing else does. The test exists so that adding macOS support makes it fail.
     """
     candidates = list(discovery._candidate_roots(None))
@@ -339,7 +339,7 @@ def test_macos_can_be_pointed_at_an_installation_by_hand(tmp_path, monkeypatch,
     models = root / "models"
     models.mkdir()
     (models / "prob-4.json").write_text("{}", encoding="utf-8")
-    monkeypatch.setenv("TOPAZ_STUDIO_VIDEO_DIR", str(root))
+    monkeypatch.setenv("TOPAZ_VIDEO_LOCAL_DIR", str(root))
     monkeypatch.setattr(discovery, "_run", fake_run())
     install = discovery.find_install()
     assert install.root == root
@@ -371,7 +371,7 @@ def test_the_message_off_windows_says_detection_is_windows_only(monkeypatch,
         discovery.find_install()
     text = str(caught.value)
     assert "Windows only" in text
-    assert "TOPAZ_STUDIO_VIDEO_DIR" in text
+    assert "TOPAZ_VIDEO_LOCAL_DIR" in text
 
 
 def test_the_message_on_windows_does_not_carry_that_note(tmp_path, monkeypatch,

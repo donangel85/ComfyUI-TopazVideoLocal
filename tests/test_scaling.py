@@ -2,7 +2,7 @@
 
 import pytest
 
-from topaz_studio.scaling import (
+from topaz_video.scaling import (
     FILL,
     FIT,
     STRETCH,

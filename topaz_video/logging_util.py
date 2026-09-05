@@ -1,4 +1,4 @@
-"""Logging for the Topaz Studio nodes.
+"""Logging for the Topaz Video Local nodes.
 
 One thing here is not cosmetic: Topaz writes an ``[TopazAuthManager]parseAuth got
 details{"auth_studio":"<JWT>...`` blob to the child process' stdout. That blob carries a
@@ -12,7 +12,7 @@ import logging
 import re
 import sys
 
-LOGGER_NAME = "TopazStudio"
+LOGGER_NAME = "TopazVideoLocal"
 
 # Anything that looks like the auth blob or a bare JWT. Kept deliberately broad: a false
 # positive costs a redacted log line, a false negative leaks a credential.
@@ -52,7 +52,7 @@ def get_logger() -> logging.Logger:
     logger = logging.getLogger(LOGGER_NAME)
     if not getattr(logger, "_topaz_configured", False):
         handler = logging.StreamHandler(sys.stdout)
-        handler.setFormatter(logging.Formatter("[TopazStudio] %(levelname)s %(message)s"))
+        handler.setFormatter(logging.Formatter("[TopazVideoLocal] %(levelname)s %(message)s"))
         logger.addHandler(handler)
         logger.addFilter(_ScrubbingFilter())
         logger.setLevel(logging.INFO)

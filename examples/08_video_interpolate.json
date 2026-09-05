@@ -102,7 +102,7 @@
     },
     {
       "id": 3,
-      "type": "TopazStudioInterpolate",
+      "type": "TopazVideoLocalInterpolate",
       "pos": [
         760,
         0
@@ -153,7 +153,7 @@
         }
       ],
       "properties": {
-        "Node name for S&R": "TopazStudioInterpolate"
+        "Node name for S&R": "TopazVideoLocalInterpolate"
       },
       "widgets_values": [
         "Apollo (apo-8)",
@@ -271,7 +271,7 @@
         "Node name for S&R": "MarkdownNote"
       },
       "widgets_values": [
-        "## Frame rate up, running time unchanged\n\n*Topaz Frame Interpolation* has a second output, **`output_fps`**. Wire that into\n*Create Video*, not the original rate — otherwise twice as many frames go out at the old\nrate and the clip plays at half speed.\n\nAt 2x the frame count comes back as **2N-1**, not 2N: interpolation makes the frames\n*between* the ones it was given, and there is no gap after the last one.\n\n`slowmo` mode is the other way round: the rate stays put and the clip gets longer. Wire\nthe **input** fps into *Create Video* for that, and be aware the audio no longer matches\nthe picture — pull it off *Create Video* and stretch it separately, or leave it out.\n\nMeasured on real footage: 24 frames at 24 fps came back as 47 at 48 fps, and the\nframe-to-frame difference dropped from 0.083 to 0.050 — the motion really is spread\nacross twice the frames, not padded with duplicates."
+        "# ComfyUI-TopazVideoLocal\n\nDrives **your own installed Topaz Video AI** through its ffmpeg filters. Nothing is\nuploaded, no API key, no credits. A licensed local Topaz Video installation is required.\n\n### Before the first run\n\n1. Run the **Topaz Diagnostics** node once. It reports the installation, the models it\n   found and the licence status, without running a workflow.\n2. **Pick your own file in the loader.** The stored filename is a placeholder.\n3. Missing models are downloaded only if you allow it — **Topaz Engine Settings** →\n   `allow_model_download`, off by default so processing stays offline.\n\n### If something goes wrong\n\nTurn on `verbose` in **Topaz Engine Settings**. Every ffmpeg command then lands in the\nComfyUI console, ready to paste into a terminal.\n\n---\n\n### Frame rate up, running time unchanged\n\n*Topaz Frame Interpolation* has a second output, **`output_fps`**. Wire that into\n*Create Video*, not the original rate — otherwise twice as many frames go out at the old\nrate and the clip plays at half speed.\n\nThe frame count is not the round number you expect. At factor *k* it comes back as\n**N x k - (k-1)**: interpolation makes the frames *between* the ones it was given, and\nthere is no gap after the last one. Measured on apo-8, from 24 frames:\n\n| Target | Frames out |\n|---|---|\n| 2x (48 fps) | 47 |\n| 3x (72 fps) | 70 |\n| 4x (96 fps) | 93 |\n\n`slowmo` mode is the other way round: the rate stays put and the clip gets longer. Wire\nthe **input** fps into *Create Video* for that, and be aware the audio no longer matches\nthe picture — pull it off *Create Video* and stretch it separately, or leave it out.\n\nMeasured on real footage: 24 frames at 24 fps came back as 47 at 48 fps, and the\nframe-to-frame difference dropped from 0.083 to 0.050 — the motion really is spread\nacross twice the frames, not padded with duplicates."
       ],
       "color": "#432",
       "bgcolor": "#653"

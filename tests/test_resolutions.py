@@ -7,7 +7,7 @@ much later as a tensor-shape error somewhere else entirely.
 
 import pytest
 
-from topaz_studio import resolutions as res
+from topaz_video import resolutions as res
 
 
 class TestSnap:

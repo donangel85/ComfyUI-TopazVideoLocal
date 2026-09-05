@@ -7,7 +7,7 @@ from pathlib import Path
 import pytest
 
 
-from topaz_studio import models  # noqa: E402
+from topaz_video import models  # noqa: E402
 
 
 def write_model(directory: Path, stem: str, data: dict):

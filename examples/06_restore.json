@@ -46,7 +46,7 @@
     },
     {
       "id": 2,
-      "type": "TopazStudioDeinterlace",
+      "type": "TopazVideoLocalDeinterlace",
       "pos": [
         367.93818181818176,
         8.562727272727223
@@ -86,7 +86,7 @@
         }
       ],
       "properties": {
-        "Node name for S&R": "TopazStudioDeinterlace"
+        "Node name for S&R": "TopazVideoLocalDeinterlace"
       },
       "widgets_values": [
         "Dione DV (ddv-3)",
@@ -96,7 +96,7 @@
     },
     {
       "id": 3,
-      "type": "TopazStudioMotionDeblur",
+      "type": "TopazVideoLocalMotionDeblur",
       "pos": [
         831.6420000000012,
         11.47900000000065
@@ -136,7 +136,7 @@
         }
       ],
       "properties": {
-        "Node name for S&R": "TopazStudioMotionDeblur"
+        "Node name for S&R": "TopazVideoLocalMotionDeblur"
       },
       "widgets_values": [
         "Themis (thm-2)",
@@ -145,7 +145,7 @@
     },
     {
       "id": 4,
-      "type": "TopazStudioStabilize",
+      "type": "TopazVideoLocalStabilize",
       "pos": [
         1293.499000000002,
         5.383999999999818
@@ -180,7 +180,7 @@
         }
       ],
       "properties": {
-        "Node name for S&R": "TopazStudioStabilize"
+        "Node name for S&R": "TopazVideoLocalStabilize"
       },
       "widgets_values": [
         "Stabilization (ref-2)",
@@ -300,7 +300,7 @@
         "Node name for S&R": "MarkdownNote"
       },
       "widgets_values": [
-        "## Video is the main job here\n\nTopaz Video AI is a **video** product, and so is this pack. The examples start from\n`Load Image` only because a still is the quickest thing to try.\n\n**To run this on video, change the two ends:**\n\n| Replace | With |\n|---|---|\n| `Load Image` | `Load Video` -> `Get Video Components` (images / audio / fps) |\n| `Save Image` | `Create Video` (images + fps + audio) -> `Save Video` |\n\nEverything between them stays exactly as it is. Every Topaz node takes a plain IMAGE\nbatch and does not care where the frames came from.\n\nWire `fps` from `Get Video Components` into the Topaz node's `fps` widget and into\n`Create Video`, and pass `audio` straight across — the frames go through Topaz, the\nsound goes around it.\n\nSee `07_video_upscale.json` for that graph already built.\n\n---\n\n**Deinterlace has no field-order switch**, on purpose. `tvai_up` documents no such\nparameter, and its `parameters` option is a dictionary that swallows unknown keys\nwithout a word — a switch was there once and measurably did nothing. The Dione models\nwork it out themselves, in both directions.\n\n**Motion deblur is a repair pass, not a sharpener.** Measured on real footage: it gives\nback about a fifth of what a real motion blur destroys, and costs roughly 8% of the\ngradient energy when run on a picture that was sharp already. Use it where there is blur\nto remove."
+        "# ComfyUI-TopazVideoLocal\n\nDrives **your own installed Topaz Video AI** through its ffmpeg filters. Nothing is\nuploaded, no API key, no credits. A licensed local Topaz Video installation is required.\n\n### Before the first run\n\n1. Run the **Topaz Diagnostics** node once. It reports the installation, the models it\n   found and the licence status, without running a workflow.\n2. **Pick your own file in the loader.** The stored filename is a placeholder.\n3. Missing models are downloaded only if you allow it — **Topaz Engine Settings** →\n   `allow_model_download`, off by default so processing stays offline.\n\n### If something goes wrong\n\nTurn on `verbose` in **Topaz Engine Settings**. Every ffmpeg command then lands in the\nComfyUI console, ready to paste into a terminal.\n\n---\n\n### Video is the main job here\n\nTopaz Video AI is a **video** product, and so is this pack. This example starts from\n`Load Image` only because a still is the quickest thing to try.\n\n**To run it on video, change the two ends — nothing in between:**\n\n| Replace | With |\n|---|---|\n| `Load Image` | `Load Video` → `Get Video Components` |\n| `Save Image` | `Create Video` → `Save Video` |\n\nEvery Topaz node takes a plain IMAGE batch and does not care where the frames came from.\nThree wires are easy to miss:\n\n- **`fps`** from `Get Video Components` into the Topaz node — the motion models use it.\n- **`fps`** into `Create Video`, or the clip plays at the wrong speed.\n- **`audio`** straight across. An IMAGE batch carries no sound, so it goes *around* the\n  Topaz node and is reattached at the end, untouched.\n\n`07_video_upscale.json` is that graph already built.\n\n---\n\n**Deinterlace has no field-order switch**, on purpose. `tvai_up` documents no such\nparameter, and its `parameters` option is a dictionary that swallows unknown keys\nwithout a word — a switch was there once and measurably did nothing. The Dione models\nwork it out themselves, in both directions.\n\n**Motion deblur is a repair pass, not a sharpener.** Measured on real footage: it gives\nback about a fifth of what a real motion blur destroys, and costs roughly 8% of the\ngradient energy when run on a picture that was sharp already. Use it where there is blur\nto remove."
       ],
       "color": "#432",
       "bgcolor": "#653"

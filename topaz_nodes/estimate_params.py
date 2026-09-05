@@ -11,9 +11,9 @@ can reuse the same set across several passes instead of re-analysing each time.
 
 from __future__ import annotations
 
-from ..topaz_studio import estimation, models
-from ..topaz_studio.engine import EngineSettings, FilterSpec, TopazEngine
-from ..topaz_studio.logging_util import get_logger
+from ..topaz_video import estimation, models
+from ..topaz_video.engine import EngineSettings, FilterSpec, TopazEngine
+from ..topaz_video.logging_util import get_logger
 
 from .common import (
     CATEGORY,

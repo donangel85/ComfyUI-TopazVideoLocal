@@ -171,7 +171,7 @@ class TopazEngine:
             logger.info("batch of %d padded to %d frames (Topaz needs at least %d)",
                         count, padded_count, min_frames)
 
-        work_dir = Path(tempfile.gettempdir()) / "comfyui_topaz_studio" / uuid.uuid4().hex
+        work_dir = Path(tempfile.gettempdir()) / "comfyui_topaz_video_local" / uuid.uuid4().hex
         work_dir.mkdir(parents=True, exist_ok=True)
         raw_out = work_dir / "out.raw"
         failed = False

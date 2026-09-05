@@ -9,8 +9,8 @@ HD there is 1920x1088.
 
 from __future__ import annotations
 
-from ..topaz_studio import resolutions
-from ..topaz_studio.logging_util import get_logger
+from ..topaz_video import resolutions
+from ..topaz_video.logging_util import get_logger
 
 from .common import CATEGORY
 

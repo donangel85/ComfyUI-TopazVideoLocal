@@ -1,20 +1,20 @@
 """Shared helpers for the node layer.
 
 The nodes stay thin: gather widget values, call the backend, turn a failure into a
-message a user can act on. All Topaz knowledge lives in ``topaz_studio``.
+message a user can act on. All Topaz knowledge lives in ``topaz_video``.
 """
 
 from __future__ import annotations
 
-from ..topaz_studio import TopazError
-from ..topaz_studio import config, models
-from ..topaz_studio.discovery import find_install
-from ..topaz_studio.engine import EngineSettings
-from ..topaz_studio.logging_util import get_logger
+from ..topaz_video import TopazError
+from ..topaz_video import config, models
+from ..topaz_video.discovery import find_install
+from ..topaz_video.engine import EngineSettings
+from ..topaz_video.logging_util import get_logger
 
 logger = get_logger()
 
-CATEGORY = "Topaz Studio"
+CATEGORY = "Topaz Video Local"
 
 # Shown when Topaz cannot be found, so the dropdown is never empty and the node still
 # loads. ComfyUI hides nodes whose INPUT_TYPES raises.

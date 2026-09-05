@@ -1,4 +1,4 @@
-"""ComfyUI-TopazStudio — Topaz Video AI nodes for ComfyUI.
+"""ComfyUI-TopazVideoLocal — Topaz Video AI nodes for ComfyUI.
 
 All processing runs locally through the Topaz Video installation on this machine.
 Nothing is uploaded anywhere.
@@ -29,7 +29,7 @@ else:
     # Imported outside a package context. pytest does this: it treats any directory
     # holding an __init__.py as a package node and imports the file directly, where a
     # relative import cannot resolve. The node layer needs ComfyUI anyway, and the tests
-    # only exercise topaz_studio, so expose empty mappings rather than failing.
+    # only exercise topaz_video, so expose empty mappings rather than failing.
     NODE_CLASS_MAPPINGS: dict = {}
     NODE_DISPLAY_NAME_MAPPINGS: dict = {}
 

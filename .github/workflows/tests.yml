@@ -1,6 +1,6 @@
 # The unit suite, on every push and pull request.
 #
-# It runs without Topaz and without ComfyUI on purpose: `topaz_studio` has no ComfyUI
+# It runs without Topaz and without ComfyUI on purpose: `topaz_video` has no ComfyUI
 # imports, and the two test files that do reach into the node layer only read
 # INPUT_TYPES, which needs neither. That is what makes CI possible at all — nothing here
 # could run a Topaz filter.

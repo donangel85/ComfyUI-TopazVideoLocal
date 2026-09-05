@@ -1,4 +1,4 @@
-# ComfyUI-TopazStudio
+# ComfyUI-TopazVideoLocal
 
 Topaz Video AI nodes for ComfyUI. Everything runs locally through your own Topaz Video
 installation — no cloud, no API keys, no uploads.
@@ -15,7 +15,7 @@ Clone or copy the package into ComfyUI's `custom_nodes` directory, or link it fr
 elsewhere with a junction (no admin rights needed):
 
 ```bash
-mklink /J "F:\ComfyUI\custom_nodes\ComfyUI-TopazStudio" "D:\TopazLab-Studio\ComfyUI-TopazStudio"
+mklink /J "F:\ComfyUI\custom_nodes\ComfyUI-TopazVideoLocal" "D:\TopazLab-Studio\ComfyUI-TopazVideoLocal"
 ```
 
 Restart ComfyUI. Start with the **Topaz Diagnostics** node — it reports what was found
@@ -442,7 +442,7 @@ python -m pytest
 
 The tests cover the command builder, error classification, the model catalog, frame
 conversion, the resolution arithmetic, installation discovery, the user-preset store and
-the shipped example workflows. They need neither Topaz nor ComfyUI: `topaz_studio` is
+the shipped example workflows. They need neither Topaz nor ComfyUI: `topaz_video` is
 deliberately free of ComfyUI imports, and the two files that do reach into the node layer
 only read `INPUT_TYPES`. CI runs them on Windows and Linux, Python 3.10 to 3.13.
 
@@ -462,7 +462,7 @@ Layout:
 
 | Directory | Contents |
 |---|---|
-| `topaz_studio/` | Backend. Knows Topaz, knows nothing about ComfyUI, testable on its own. |
+| `topaz_video/` | Backend. Knows Topaz, knows nothing about ComfyUI, testable on its own. |
 | `topaz_nodes/` | The ComfyUI layer. Thin: gather widget values, call the backend, turn a failure into a message worth reading. |
 | `web/` | Frontend extension. Only the Upscale Params buttons — everything else works without it. |
 
@@ -495,7 +495,7 @@ govern.
 
 ### Parameter ranges
 
-`topaz_studio/parameters.py` holds the valid range of every `tvai_up` tuning parameter,
+`topaz_video/parameters.py` holds the valid range of every `tvai_up` tuning parameter,
 read from the filter's own help text. Six of them run -1..1, but `prenoise` runs 0..0.1,
 `gsize` 0..5, `grain` and `blend` 0..1.
 

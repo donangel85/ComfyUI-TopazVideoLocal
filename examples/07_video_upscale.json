@@ -103,7 +103,7 @@
     },
     {
       "id": 3,
-      "type": "TopazStudioUpscaleParams",
+      "type": "TopazVideoLocalUpscaleParams",
       "pos": [
         760,
         -300
@@ -127,7 +127,7 @@
         }
       ],
       "properties": {
-        "Node name for S&R": "TopazStudioUpscaleParams"
+        "Node name for S&R": "TopazVideoLocalUpscaleParams"
       },
       "widgets_values": [
         "AI-generated video",
@@ -151,7 +151,7 @@
     },
     {
       "id": 4,
-      "type": "TopazStudioUpscale",
+      "type": "TopazVideoLocalUpscale",
       "pos": [
         760,
         60
@@ -204,7 +204,7 @@
         }
       ],
       "properties": {
-        "Node name for S&R": "TopazStudioUpscale"
+        "Node name for S&R": "TopazVideoLocalUpscale"
       },
       "widgets_values": [
         "Proteus (prob-4)",
@@ -323,7 +323,7 @@
         "Node name for S&R": "MarkdownNote"
       },
       "widgets_values": [
-        "## The graph the pack was built for\n\n```\nLoad Video -> Get Video Components -> Topaz Video Upscale -> Create Video -> Save Video\n                     |  fps ------------------^                  ^  ^\n                     |  audio -------------------------------------  |\n                     +--fps ----------------------------------------+\n```\n\n**To change what it does, change the preset** in *Topaz Upscale Params* — that is the\none knob most work needs. Picking a profile copies its values into the sliders and\nswitches `edit_preset_values` on, so you can adjust from there; switch it off to compare\nagainst the untouched preset.\n\n**Three wires are easy to miss:**\n\n- `fps` into the Topaz node. The motion models use it. Wiring it from the clip beats\n  typing a number that then disagrees with the source.\n- `fps` into *Create Video*, or the result plays at the wrong speed.\n- `audio` straight from *Get Video Components* into *Create Video*. An IMAGE batch\n  carries no sound, so it goes around the Topaz node rather than through it.\n\n**Memory.** The whole clip is decoded into an IMAGE batch before anything runs. At 1080p\na few hundred frames is already several gigabytes, and the 2x output is four times that\nagain. Cut long clips into pieces, or work at a lower resolution and enlarge last."
+        "# ComfyUI-TopazVideoLocal\n\nDrives **your own installed Topaz Video AI** through its ffmpeg filters. Nothing is\nuploaded, no API key, no credits. A licensed local Topaz Video installation is required.\n\n### Before the first run\n\n1. Run the **Topaz Diagnostics** node once. It reports the installation, the models it\n   found and the licence status, without running a workflow.\n2. **Pick your own file in the loader.** The stored filename is a placeholder.\n3. Missing models are downloaded only if you allow it — **Topaz Engine Settings** →\n   `allow_model_download`, off by default so processing stays offline.\n\n### If something goes wrong\n\nTurn on `verbose` in **Topaz Engine Settings**. Every ffmpeg command then lands in the\nComfyUI console, ready to paste into a terminal.\n\n---\n\n### The graph this pack was built for\n\n```\nLoad Video -> Get Video Components -> Topaz Video Upscale -> Create Video -> Save Video\n                     |  fps ------------------^                  ^  ^\n                     |  audio -------------------------------------  |\n                     +--fps ----------------------------------------+\n```\n\n**To change what it does, change the preset** in *Topaz Upscale Params* — that is the\none knob most work needs. Picking a profile copies its values into the sliders and\nswitches `edit_preset_values` on, so you can adjust from there; switch it off to compare\nagainst the untouched preset.\n\n**Three wires are easy to miss:**\n\n- `fps` into the Topaz node. The motion models use it. Wiring it from the clip beats\n  typing a number that then disagrees with the source.\n- `fps` into *Create Video*, or the result plays at the wrong speed.\n- `audio` straight from *Get Video Components* into *Create Video*. An IMAGE batch\n  carries no sound, so it goes around the Topaz node rather than through it.\n\n**Memory.** The whole clip is decoded into an IMAGE batch before anything runs. At 1080p\na few hundred frames is already several gigabytes, and the 2x output is four times that\nagain. Cut long clips into pieces, or work at a lower resolution and enlarge last."
       ],
       "color": "#432",
       "bgcolor": "#653"

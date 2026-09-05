@@ -105,7 +105,7 @@
     },
     {
       "id": 3,
-      "type": "TopazStudioDeinterlace",
+      "type": "TopazVideoLocalDeinterlace",
       "pos": [
         760,
         0
@@ -153,7 +153,7 @@
         }
       ],
       "properties": {
-        "Node name for S&R": "TopazStudioDeinterlace"
+        "Node name for S&R": "TopazVideoLocalDeinterlace"
       },
       "widgets_values": [
         "Dione DV (ddv-3)",
@@ -163,7 +163,7 @@
     },
     {
       "id": 4,
-      "type": "TopazStudioStabilize",
+      "type": "TopazVideoLocalStabilize",
       "pos": [
         1140,
         0
@@ -206,7 +206,7 @@
         }
       ],
       "properties": {
-        "Node name for S&R": "TopazStudioStabilize"
+        "Node name for S&R": "TopazVideoLocalStabilize"
       },
       "widgets_values": [
         "Stabilization (ref-2)",
@@ -224,7 +224,7 @@
     },
     {
       "id": 5,
-      "type": "TopazStudioUpscale",
+      "type": "TopazVideoLocalUpscale",
       "pos": [
         1520,
         0
@@ -277,7 +277,7 @@
         }
       ],
       "properties": {
-        "Node name for S&R": "TopazStudioUpscale"
+        "Node name for S&R": "TopazVideoLocalUpscale"
       },
       "widgets_values": [
         "Proteus (prob-4)",
@@ -396,7 +396,7 @@
         "Node name for S&R": "MarkdownNote"
       },
       "widgets_values": [
-        "## Order matters, and so does leaving passes out\n\n**Deinterlace, then stabilise, then enlarge.** Each pass wants the one before it done:\ncombing confuses motion estimation, and enlarging first means everything after it works\non four times the pixels for no gain.\n\n**Run only the passes the footage needs.** Every one of these is a model rebuilding the\npicture, and a rebuild is never free. Measured on real, already-sharp frames, motion\ndeblur alone costs about 8% of the gradient energy. Deinterlace on progressive footage\nand stabilisation on a locked-off shot are the same kind of waste.\n\nBypass a node you do not need (**Ctrl+B**) rather than deleting it, and the graph stays\nreadable.\n\n**Stabilisation resamples back to the input size.** `auto_crop` cuts into the picture by\nhowever much the camera actually moved — 320x240 came back as 312x232 on a gentle shake\nand 252x188 on a strong one — so the node scales the result back to the size it was\nhanded. An IMAGE batch has to be one size throughout."
+        "# ComfyUI-TopazVideoLocal\n\nDrives **your own installed Topaz Video AI** through its ffmpeg filters. Nothing is\nuploaded, no API key, no credits. A licensed local Topaz Video installation is required.\n\n### Before the first run\n\n1. Run the **Topaz Diagnostics** node once. It reports the installation, the models it\n   found and the licence status, without running a workflow.\n2. **Pick your own file in the loader.** The stored filename is a placeholder.\n3. Missing models are downloaded only if you allow it — **Topaz Engine Settings** →\n   `allow_model_download`, off by default so processing stays offline.\n\n### If something goes wrong\n\nTurn on `verbose` in **Topaz Engine Settings**. Every ffmpeg command then lands in the\nComfyUI console, ready to paste into a terminal.\n\n---\n\n### Order matters, and so does leaving passes out\n\n**Deinterlace, then stabilise, then enlarge.** Each pass wants the one before it done:\ncombing confuses motion estimation, and enlarging first means everything after it works\non four times the pixels for no gain.\n\n**Run only the passes the footage needs.** Every one of these is a model rebuilding the\npicture, and a rebuild is never free. Measured on real, already-sharp frames, motion\ndeblur alone costs about 8% of the gradient energy. Deinterlace on progressive footage\nand stabilisation on a locked-off shot are the same kind of waste.\n\nBypass a node you do not need (**Ctrl+B**) rather than deleting it, and the graph stays\nreadable.\n\n**Stabilisation resamples back to the input size.** `auto_crop` cuts into the picture by\nhowever much the camera actually moved — 320x240 came back as 312x232 on a gentle shake\nand 252x188 on a strong one — so the node scales the result back to the size it was\nhanded. An IMAGE batch has to be one size throughout."
       ],
       "color": "#432",
       "bgcolor": "#653"

@@ -13,11 +13,11 @@ Chain stages by feeding one **Topaz Upscale Stage** into the next through
 
 from __future__ import annotations
 
-from ..topaz_studio import models
-from ..topaz_studio.command import render_parameters_dict
-from ..topaz_studio.engine import FilterSpec
-from ..topaz_studio.logging_util import get_logger
-from ..topaz_studio.scaling import (
+from ..topaz_video import models
+from ..topaz_video.command import render_parameters_dict
+from ..topaz_video.engine import FilterSpec
+from ..topaz_video.logging_util import get_logger
+from ..topaz_video.scaling import (
     FIT,
     FIT_MODES,
     describe_chain,

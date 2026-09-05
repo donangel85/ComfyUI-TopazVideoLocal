@@ -12,7 +12,7 @@ declarations spelled the limits out a third time.
 
 import pytest
 
-from topaz_studio import parameters, profiles
+from topaz_video import parameters, profiles
 
 
 class TestRanges:

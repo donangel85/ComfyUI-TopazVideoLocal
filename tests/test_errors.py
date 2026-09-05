@@ -9,7 +9,7 @@ import sys
 from pathlib import Path
 
 
-from topaz_studio.errors import (  # noqa: E402
+from topaz_video.errors import (  # noqa: E402
     TopazDecodeError,
     TopazEncodeError,
     TopazLicenseError,

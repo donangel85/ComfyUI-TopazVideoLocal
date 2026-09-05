@@ -13,7 +13,7 @@ who wrote them deserve credit for the ideas and for mapping out this territory f
 | [ComfyUI-TopazGigapixelAI](https://github.com/opj161/ComfyUI-TopazGigapixelAI) | opj161 | **none stated** | Same. |
 | [Comfy-Topaz](https://github.com/choey/Comfy-Topaz) | choey | MIT | Reviewed for its Topaz Photo CLI integration. |
 | [Comfy-Topaz-Photo](https://github.com/leoleelxh/Comfy-Topaz-Photo) | leoleelxh | MIT | Same. |
-| [topyaz](https://github.com/twardoch/topyaz) | Adam Twardoch | MIT | Reviewed for its separation of product handlers from execution, which informed the split between `topaz_studio` and `topaz_nodes` here. |
+| [topyaz](https://github.com/twardoch/topyaz) | Adam Twardoch | MIT | Reviewed for its separation of product handlers from execution, which informed the split between `topaz_video` and `topaz_nodes` here. |
 
 **On the unlicensed projects:** a public repository without a licence file is
 "all rights reserved" by default. Those three could be read but not borrowed from, so

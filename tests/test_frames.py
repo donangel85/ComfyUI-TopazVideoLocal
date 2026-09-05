@@ -7,7 +7,7 @@ import numpy as np
 import pytest
 
 
-from topaz_studio import frames  # noqa: E402
+from topaz_video import frames  # noqa: E402
 
 
 def batch(count=4, height=8, width=6, channels=3):

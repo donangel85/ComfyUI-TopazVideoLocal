@@ -44,7 +44,7 @@
     },
     {
       "id": 2,
-      "type": "TopazStudioUpscaleParams",
+      "type": "TopazVideoLocalUpscaleParams",
       "pos": [
         361.30489084034645,
         2.0651298938895044
@@ -68,7 +68,7 @@
         }
       ],
       "properties": {
-        "Node name for S&R": "TopazStudioUpscaleParams"
+        "Node name for S&R": "TopazVideoLocalUpscaleParams"
       },
       "widgets_values": [
         "AI-generated video",
@@ -91,7 +91,7 @@
     },
     {
       "id": 3,
-      "type": "TopazStudioEngineSettings",
+      "type": "TopazVideoLocalEngineSettings",
       "pos": [
         364.1915355531164,
         535.5361385534824
@@ -115,7 +115,7 @@
         }
       ],
       "properties": {
-        "Node name for S&R": "TopazStudioEngineSettings"
+        "Node name for S&R": "TopazVideoLocalEngineSettings"
       },
       "widgets_values": [
         "-2",
@@ -133,7 +133,7 @@
     },
     {
       "id": 4,
-      "type": "TopazStudioImageUpscale",
+      "type": "TopazVideoLocalImageUpscale",
       "pos": [
         762.8162946700825,
         1.924429808513234
@@ -178,7 +178,7 @@
         }
       ],
       "properties": {
-        "Node name for S&R": "TopazStudioImageUpscale"
+        "Node name for S&R": "TopazVideoLocalImageUpscale"
       },
       "widgets_values": [
         "Proteus (prob-4)",
@@ -241,7 +241,7 @@
         "Node name for S&R": "MarkdownNote"
       },
       "widgets_values": [
-        "## Video is the main job here\n\nTopaz Video AI is a **video** product, and so is this pack. The examples start from\n`Load Image` only because a still is the quickest thing to try.\n\n**To run this on video, change the two ends:**\n\n| Replace | With |\n|---|---|\n| `Load Image` | `Load Video` -> `Get Video Components` (images / audio / fps) |\n| `Save Image` | `Create Video` (images + fps + audio) -> `Save Video` |\n\nEverything between them stays exactly as it is. Every Topaz node takes a plain IMAGE\nbatch and does not care where the frames came from.\n\nWire `fps` from `Get Video Components` into the Topaz node's `fps` widget and into\n`Create Video`, and pass `audio` straight across — the frames go through Topaz, the\nsound goes around it.\n\nSee `07_video_upscale.json` for that graph already built."
+        "# ComfyUI-TopazVideoLocal\n\nDrives **your own installed Topaz Video AI** through its ffmpeg filters. Nothing is\nuploaded, no API key, no credits. A licensed local Topaz Video installation is required.\n\n### Before the first run\n\n1. Run the **Topaz Diagnostics** node once. It reports the installation, the models it\n   found and the licence status, without running a workflow.\n2. **Pick your own file in the loader.** The stored filename is a placeholder.\n3. Missing models are downloaded only if you allow it — **Topaz Engine Settings** →\n   `allow_model_download`, off by default so processing stays offline.\n\n### If something goes wrong\n\nTurn on `verbose` in **Topaz Engine Settings**. Every ffmpeg command then lands in the\nComfyUI console, ready to paste into a terminal.\n\n---\n\n### Video is the main job here\n\nTopaz Video AI is a **video** product, and so is this pack. This example starts from\n`Load Image` only because a still is the quickest thing to try.\n\n**To run it on video, change the two ends — nothing in between:**\n\n| Replace | With |\n|---|---|\n| `Load Image` | `Load Video` → `Get Video Components` |\n| `Save Image` | `Create Video` → `Save Video` |\n\nEvery Topaz node takes a plain IMAGE batch and does not care where the frames came from.\nThree wires are easy to miss:\n\n- **`fps`** from `Get Video Components` into the Topaz node — the motion models use it.\n- **`fps`** into `Create Video`, or the clip plays at the wrong speed.\n- **`audio`** straight across. An IMAGE batch carries no sound, so it goes *around* the\n  Topaz node and is reattached at the end, untouched.\n\n`07_video_upscale.json` is that graph already built."
       ],
       "color": "#432",
       "bgcolor": "#653"

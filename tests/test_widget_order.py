@@ -35,7 +35,7 @@ WIDGET_TYPES = {"INT", "FLOAT", "STRING", "BOOLEAN"}
 
 # Widget order as published, per node. Append only.
 BASELINES = {
-    "TopazStudioUpscaleParams": [
+    "TopazVideoLocalUpscaleParams": [
         "profile", "profile_strength",
         "preblur", "noise", "details", "halo", "blur", "compression",
         "prenoise", "grain", "grain_size", "grain_type", "blend",
@@ -43,18 +43,18 @@ BASELINES = {
         # --- appended after the above shipped ---
         "edit_preset_values",
     ],
-    "TopazStudioUpscaleStage": [
+    "TopazVideoLocalUpscaleStage": [
         "model", "scale_factor",
         # --- appended ---
         "scale_mode", "target_width", "target_height", "fit_mode",
     ],
-    "TopazStudioUpscale": [
+    "TopazVideoLocalUpscale": [
         "model", "scale_mode", "scale_factor", "fps",
         "target_width", "target_height",
         # --- appended ---
         "fit_mode",
     ],
-    "TopazStudioImageUpscale": [
+    "TopazVideoLocalImageUpscale": [
         "model", "scale_mode", "scale_factor", "batch_mode",
         "target_width", "target_height",
         # --- appended ---
@@ -67,7 +67,7 @@ BASELINES = {
     # sends anyone with stuttering output chasing the wrong thing, so it went. Taken
     # while the package was unpublished and the node had never run in a graph -- that
     # is the only reason a removal was acceptable. Append from here.
-    "TopazStudioDeinterlace": [
+    "TopazVideoLocalDeinterlace": [
         "model", "scale_factor", "fps",
     ],
 }

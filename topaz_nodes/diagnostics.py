@@ -10,16 +10,16 @@ import os
 import subprocess
 from pathlib import Path
 
-from ..topaz_studio import config, models
-from ..topaz_studio.discovery import (
+from ..topaz_video import config, models
+from ..topaz_video.discovery import (
     TopazInstall,
     available_encoders,
     clear_cache,
     find_install,
     has_software_h264_decoder,
 )
-from ..topaz_studio.license import verify
-from ..topaz_studio.logging_util import scrub
+from ..topaz_video.license import verify
+from ..topaz_video.logging_util import scrub
 
 from .common import CATEGORY
 
@@ -64,7 +64,7 @@ class TopazDiagnostics:
             clear_cache()
             models.clear_cache()
 
-        lines: list[str] = ["=== Topaz Studio diagnostics ==="]
+        lines: list[str] = ["=== Topaz Video Local diagnostics ==="]
 
         try:
             install = find_install(str(config.get("video_install_path", "") or "") or None)
@@ -144,7 +144,7 @@ class TopazDiagnostics:
     def _license_section(self, install: TopazInstall, check: bool) -> list[str]:
         lines = ["", "-- Licence --"]
         if not check:
-            from ..topaz_studio.license import cached_status
+            from ..topaz_video.license import cached_status
             cached = cached_status(install)
             if cached:
                 lines.append(f"  cached: {cached.state} ({cached.message})")

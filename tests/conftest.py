@@ -1,7 +1,7 @@
 """Test bootstrap.
 
 The package root contains an ``__init__.py`` that imports the ComfyUI node layer. The
-tests must not touch that: they exercise ``topaz_studio``, which is deliberately free of
+tests must not touch that: they exercise ``topaz_video``, which is deliberately free of
 ComfyUI imports so it runs anywhere.
 
 Putting the package directory on ``sys.path`` here (rather than in each test module)

@@ -1,5 +1,5 @@
 [project]
-name = "comfyui-topazstudio"
+name = "comfyui-topazvideolocal"
 description = "Topaz Video AI nodes for ComfyUI. All processing runs locally."
 version = "0.1.0"
 license = { file = "LICENSE" }
@@ -18,14 +18,14 @@ classifiers = [
 [project.urls]
 # TODO before publishing: replace USERNAME with the GitHub account this lives under.
 # .github/workflows/publish.yml refuses to run while this placeholder is here.
-Repository = "https://github.com/USERNAME/ComfyUI-TopazStudio"
+Repository = "https://github.com/USERNAME/ComfyUI-TopazVideoLocal"
 
 [tool.comfy]
 # TODO before publishing: PublisherId is the publisher name created at
 # registry.comfy.org (GitHub login). It cannot be guessed from here, and the publish
 # workflow checks that it has been filled in.
 PublisherId = ""
-DisplayName = "ComfyUI-TopazStudio"
+DisplayName = "ComfyUI-TopazVideoLocal"
 # Optional: a URL to a square icon, 400x400 or smaller.
 Icon = ""
 

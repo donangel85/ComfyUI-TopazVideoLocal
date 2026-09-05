@@ -15,7 +15,7 @@
 import { app } from "../../../scripts/app.js";
 import { api } from "../../../scripts/api.js";
 
-const NODE = "TopazStudioUpscaleParams";
+const NODE = "TopazVideoLocalUpscaleParams";
 const MANUAL = "manual";
 
 // Must match SLIDER_KEYS/EXTRA_KEYS in server_routes.py and the widget names in
@@ -57,18 +57,18 @@ function toast(text, kind = "info") {
   try {
     app.extensionManager.toast.add({
       severity: kind,
-      summary: "Topaz Studio",
+      summary: "Topaz Video Local",
       detail: text,
       life: 6000,
     });
   } catch (_) {
-    console.log(`[Topaz Studio] ${text}`);
+    console.log(`[Topaz Video Local] ${text}`);
   }
 }
 
 async function fetchPresets(strength) {
   const response = await api.fetchApi(
-    `/topaz_studio/presets?strength=${encodeURIComponent(strength)}`);
+    `/topaz_video_local/presets?strength=${encodeURIComponent(strength)}`);
   if (!response.ok) throw new Error(`server returned ${response.status}`);
   return await response.json();
 }
@@ -138,7 +138,7 @@ async function saveCurrentAsPreset(node) {
   }
 
   try {
-    const response = await api.fetchApi("/topaz_studio/presets", {
+    const response = await api.fetchApi("/topaz_video_local/presets", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -168,7 +168,7 @@ async function saveCurrentAsPreset(node) {
 }
 
 app.registerExtension({
-  name: "TopazStudio.Presets",
+  name: "TopazVideoLocal.Presets",
   async beforeRegisterNodeDef(nodeType, nodeData) {
     if (nodeData.name !== NODE) return;
 

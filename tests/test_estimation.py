@@ -5,7 +5,7 @@ The sample lines are verbatim from a real run against prap-3.
 
 import pytest
 
-from topaz_studio import estimation
+from topaz_video import estimation
 
 REAL_OUTPUT = """
 Stream mapping:

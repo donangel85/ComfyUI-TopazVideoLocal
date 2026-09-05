@@ -6,9 +6,9 @@ widgets, while everything Topaz can do is still reachable by attaching a setting
 
 from __future__ import annotations
 
-from ..topaz_studio import config, parameters, profiles
-from ..topaz_studio.engine import EngineSettings
-from ..topaz_studio.logging_util import get_logger
+from ..topaz_video import config, parameters, profiles
+from ..topaz_video.engine import EngineSettings
+from ..topaz_video.logging_util import get_logger
 
 from .common import CATEGORY, model_dir_or_none
 
@@ -132,7 +132,7 @@ class TopazUpscaleParams:
 
     @classmethod
     def INPUT_TYPES(cls):
-        # Limits come from topaz_studio.parameters so they cannot drift from what
+        # Limits come from topaz_video.parameters so they cannot drift from what
         # profiles and the preset routes clamp to. A widget whose range disagrees with
         # them refuses a value the preset legitimately holds, and the whole prompt
         # fails: "Value 0.3 bigger than max of 0.1: prenoise".

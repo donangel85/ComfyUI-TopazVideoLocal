@@ -1,4 +1,4 @@
-"""ComfyUI node registrations for Topaz Studio."""
+"""ComfyUI node registrations for Topaz Video Local."""
 
 from .diagnostics import TopazDiagnostics
 from .estimate_params import TopazParameterEstimate
@@ -16,35 +16,35 @@ from .video_stabilize import TopazVideoStabilize
 from .video_upscale import TopazVideoUpscale
 
 NODE_CLASS_MAPPINGS = {
-    "TopazStudioUpscale": TopazVideoUpscale,
-    "TopazStudioInterpolate": TopazVideoInterpolate,
-    "TopazStudioStabilize": TopazVideoStabilize,
-    "TopazStudioDeinterlace": TopazDeinterlace,
-    "TopazStudioMotionDeblur": TopazMotionDeblur,
-    "TopazStudioParameterEstimate": TopazParameterEstimate,
-    "TopazStudioImageUpscale": TopazImageUpscale,
-    "TopazStudioResolution": TopazResolution,
-    "TopazStudioEngineSettings": TopazEngineSettings,
-    "TopazStudioUpscaleParams": TopazUpscaleParams,
-    "TopazStudioUpscaleStage": TopazUpscaleStage,
-    "TopazStudioHyperionParams": TopazHyperionParams,
-    "TopazStudioDiagnostics": TopazDiagnostics,
+    "TopazVideoLocalUpscale": TopazVideoUpscale,
+    "TopazVideoLocalInterpolate": TopazVideoInterpolate,
+    "TopazVideoLocalStabilize": TopazVideoStabilize,
+    "TopazVideoLocalDeinterlace": TopazDeinterlace,
+    "TopazVideoLocalMotionDeblur": TopazMotionDeblur,
+    "TopazVideoLocalParameterEstimate": TopazParameterEstimate,
+    "TopazVideoLocalImageUpscale": TopazImageUpscale,
+    "TopazVideoLocalResolution": TopazResolution,
+    "TopazVideoLocalEngineSettings": TopazEngineSettings,
+    "TopazVideoLocalUpscaleParams": TopazUpscaleParams,
+    "TopazVideoLocalUpscaleStage": TopazUpscaleStage,
+    "TopazVideoLocalHyperionParams": TopazHyperionParams,
+    "TopazVideoLocalDiagnostics": TopazDiagnostics,
 }
 
 NODE_DISPLAY_NAME_MAPPINGS = {
-    "TopazStudioUpscale": "Topaz Video Upscale",
-    "TopazStudioInterpolate": "Topaz Frame Interpolation",
-    "TopazStudioStabilize": "Topaz Video Stabilize",
-    "TopazStudioDeinterlace": "Topaz Deinterlace",
-    "TopazStudioMotionDeblur": "Topaz Motion Deblur",
-    "TopazStudioParameterEstimate": "Topaz Parameter Estimate",
-    "TopazStudioImageUpscale": "Topaz Image Upscale",
-    "TopazStudioResolution": "Topaz Resolution",
-    "TopazStudioEngineSettings": "Topaz Engine Settings",
-    "TopazStudioUpscaleParams": "Topaz Upscale Params",
-    "TopazStudioUpscaleStage": "Topaz Upscale Stage",
-    "TopazStudioHyperionParams": "Topaz Hyperion HDR Params",
-    "TopazStudioDiagnostics": "Topaz Diagnostics",
+    "TopazVideoLocalUpscale": "Topaz Video Upscale",
+    "TopazVideoLocalInterpolate": "Topaz Frame Interpolation",
+    "TopazVideoLocalStabilize": "Topaz Video Stabilize",
+    "TopazVideoLocalDeinterlace": "Topaz Deinterlace",
+    "TopazVideoLocalMotionDeblur": "Topaz Motion Deblur",
+    "TopazVideoLocalParameterEstimate": "Topaz Parameter Estimate",
+    "TopazVideoLocalImageUpscale": "Topaz Image Upscale",
+    "TopazVideoLocalResolution": "Topaz Resolution",
+    "TopazVideoLocalEngineSettings": "Topaz Engine Settings",
+    "TopazVideoLocalUpscaleParams": "Topaz Upscale Params",
+    "TopazVideoLocalUpscaleStage": "Topaz Upscale Stage",
+    "TopazVideoLocalHyperionParams": "Topaz Hyperion HDR Params",
+    "TopazVideoLocalDiagnostics": "Topaz Diagnostics",
 }
 
 __all__ = ["NODE_CLASS_MAPPINGS", "NODE_DISPLAY_NAME_MAPPINGS"]
