@@ -23,3 +23,6 @@ docs/
 # material. Never part of the package and never published.
 Testmaterial/
 testmaterial/
+
+# CI scratch: the captured pytest output, see .github/workflows/tests.yml
+pytest.out
