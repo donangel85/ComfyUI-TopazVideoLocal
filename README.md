@@ -21,6 +21,11 @@ mklink /J "F:\ComfyUI\custom_nodes\ComfyUI-TopazVideoLocal" "D:\TopazLab-Studio\
 Restart ComfyUI. Start with the **Topaz Diagnostics** node — it reports what was found
 and what is missing, without running a workflow.
 
+![Topaz Diagnostics wired into Preview as Text](images/node-diagnostics.png)
+
+Every example workflow ships with that pair already wired up, in a group titled
+*Before the first run*.
+
 Then open one of the [example workflows](examples/). `07_video_upscale.json` is the
 graph this pack exists for; `01_basic_upscale.json` is the smallest possible one.
 
@@ -82,6 +87,8 @@ output is four times that again. Cut long clips into pieces, or enlarge last.
 
 The main nodes work on their own; attach the settings nodes only when you need them.
 
+<img src="images/node-video-upscale.png" alt="Topaz Video Upscale" width="330">
+
 ## Choosing an output size
 
 Both upscale nodes take `scale_mode: factor | target_size`. `factor` is an exact integer
@@ -98,6 +105,8 @@ Topaz Resolution ──▶ width  ──▶ target_width
 
 It outputs plain `INT`s rather than a private type, so the same node drives MiniMax-H3,
 LTX2.5, an empty latent, or anything else that takes dimensions.
+
+<img src="images/node-resolution.png" alt="Topaz Resolution" width="330">
 
 ### Divisibility
 
@@ -151,10 +160,19 @@ never leave the process in between — no repeated model loading and no tensor r
 Wiring two Upscale nodes in series also works, but costs an extra process launch and
 conversion each time.
 
+<img src="images/node-upscale-stage.png" alt="Topaz Upscale Stage" width="330">
+
 Each stage takes its own `params`, so you can denoise hard on the first pass and sharpen
 on the second. Scale factors are validated against the model before anything runs: Topaz
 rejects e.g. `pnat-1` at 1x, and the node says so immediately rather than failing several
 seconds into a render.
+
+## Repair passes
+
+![Topaz Video Stabilize, Deinterlace and Motion Deblur](images/nodes-restore.png)
+
+`06_restore.json` runs all three on the same source so you can compare them side by side,
+and `09_video_restore_chain.json` chains them in the order that makes sense.
 
 ## Deinterlacing, and why there is no field-order control
 
@@ -202,6 +220,8 @@ handle the audio separately or leave it out.
 
 The node's second output, `output_fps`, already carries the right number for whichever
 mode is selected. Use it rather than typing the rate twice.
+
+<img src="images/node-frame-interpolation.png" alt="Topaz Frame Interpolation" width="380">
 
 ## And why there is no SAM2 mask node
 
@@ -251,6 +271,8 @@ Reproduce with `research/visual_check.py` (synthetic material, known defects) an
 `research/real_material_check.py` (real clips). Both write pictures next to the numbers.
 
 ## Letting Topaz choose the parameters
+
+<img src="images/node-parameter-estimate.png" alt="Topaz Parameter Estimate" width="330" align="right">
 
 **Topaz Parameter Estimate** runs `tvai_pe` over the batch and reports the tuning it would
 pick for that specific material. The result plugs straight into the `params` input of any
@@ -305,6 +327,8 @@ Topaz presets also log the model they were authored for.
 
 ### Seeing and adjusting a preset's values
 
+<img src="images/node-upscale-params.png" alt="Topaz Upscale Params with the preset buttons" width="330" align="right">
+
 Picking a profile in the browser **copies its numbers straight into the sliders**, so you
 can see what the preset actually does and change any of it. `profile_strength` is applied
 while copying, so what you end up looking at is what will run.
@@ -331,6 +355,8 @@ Two buttons round it out:
 - **Save sliders as preset** — stores the current values under a name you choose. It
   appears in the dropdown as `My: <name>` and behaves like any other profile, strength
   scaling included. Saving under an existing name overwrites it.
+
+<br clear="right">
 
 Saved presets live in `user_presets.json` beside the package and are git-ignored — they
 are your machine's data. Other Upscale Params nodes already on the canvas offer a newly
@@ -433,6 +459,8 @@ Run **Topaz Diagnostics** first. Then:
 
 Turn on `verbose` in Engine Settings to log the exact FFmpeg command for every call —
 it can be pasted straight into a terminal to reproduce a failure.
+
+<img src="images/node-engine-settings.png" alt="Topaz Engine Settings" width="330">
 
 ## Development
 

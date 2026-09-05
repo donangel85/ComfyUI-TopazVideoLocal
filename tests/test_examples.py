@@ -39,13 +39,21 @@ EXAMPLES = PACKAGE / "examples"
 
 WIDGET_TYPES = {"INT", "FLOAT", "STRING", "BOOLEAN"}
 
-# ComfyUI's own nodes, plus the two frontend-only ones. Anything outside this set and
+# ComfyUI's own nodes, plus the frontend-only ones. Anything outside this set and
 # NODE_CLASS_MAPPINGS means an example grew a dependency on a third-party pack.
 CORE_NODES = {
     "LoadImage", "SaveImage", "PreviewImage",
     "LoadVideo", "SaveVideo", "CreateVideo", "GetVideoComponents",
+    # comfy_extras.nodes_preview_any, shown in the menu as "Preview as Text". The
+    # examples use it to display the Diagnostics report on the canvas.
+    "PreviewAny",
     "Note", "MarkdownNote", "Reroute", "PrimitiveNode",
 }
+
+# Inputs declared as "*" take any type. Comparing a link's type against one is a
+# category error: the socket has no type to disagree with. Missing this made every
+# example fail the moment a Diagnostics report was wired into a Preview as Text.
+WILDCARD_TYPES = {"*", "ANY", "any"}
 
 # What model_choices() returns when no Topaz installation is present. The catalogue is
 # read from Topaz's own files, so on a machine without it every model dropdown holds
@@ -172,36 +180,63 @@ def test_widget_values_fit_the_nodes(workflows, name, node_classes):
 
 @pytest.mark.parametrize("name", [p.name for p in example_files()])
 def test_links_land_where_they_claim(workflows, name):
-    """Both ends of every link exist, and agree on the type being carried."""
+    """Both ends of every link exist and agree on the type being carried.
+
+    **Checked from the input side, on purpose.** A workflow records a connection twice:
+    as an entry in the top-level ``links`` array carrying a destination slot index, and
+    as a ``link`` id on the destination node's own input. Those two can disagree, and in
+    ComfyUI-saved files they routinely do: opening a workflow expands every widget into
+    the inputs array, which shifts the real slot indices, while the link entries keep the
+    index they were created with.
+
+    ComfyUI believes the input side. Verified against the running frontend rather than
+    reasoned about: a graph whose ``links`` entry pointed at slot 4 (a combo) while
+    ``inputs[8].link`` pointed at ``target_width`` loaded with the connection on
+    ``target_width``, and ``graphToPrompt`` sent ``target_width: ["1", 0]`` with the
+    combo keeping its literal value.
+
+    An earlier version of this test compared the ``links`` array's slot index against the
+    inputs array and failed every example the first time somebody saved one from ComfyUI
+    — which is exactly the wrong way round for a test whose job is to catch real
+    breakage.
+    """
     data = workflows[name]
     by_id = {node["id"]: node for node in data["nodes"]}
+    links = {}
     problems = []
-    seen = set()
+
     for link in data["links"]:
-        link_id, src_id, src_slot, dst_id, dst_slot, link_type = link[:6]
-        if link_id in seen:
+        link_id, src_id, src_slot, _dst_id, _dst_slot, link_type = link[:6]
+        if link_id in links:
             problems.append(f"{name}: duplicate link id {link_id}")
-        seen.add(link_id)
-        if src_id not in by_id or dst_id not in by_id:
-            problems.append(f"{name}: link {link_id} points at a node that is not here")
+        links[link_id] = (src_id, src_slot, link_type)
+        if src_id not in by_id:
+            problems.append(f"{name}: link {link_id} comes from a node that is not here")
             continue
-        source, target = by_id[src_id], by_id[dst_id]
-        outputs = source.get("outputs") or []
-        inputs = target.get("inputs") or []
+        outputs = by_id[src_id].get("outputs") or []
         if src_slot >= len(outputs):
             problems.append(f"{name}: link {link_id} leaves output slot {src_slot}, "
-                            f"which {source['type']} does not have")
+                            f"which {by_id[src_id]['type']} does not have")
         elif outputs[src_slot].get("type") != link_type:
             problems.append(f"{name}: link {link_id} says {link_type} but "
-                            f"{source['type']} output {src_slot} is "
+                            f"{by_id[src_id]['type']} output {src_slot} is "
                             f"{outputs[src_slot].get('type')}")
-        if dst_slot >= len(inputs):
-            problems.append(f"{name}: link {link_id} enters input slot {dst_slot}, "
-                            f"which {target['type']} does not have")
-        elif inputs[dst_slot].get("type") != link_type:
-            problems.append(f"{name}: link {link_id} says {link_type} but "
-                            f"{target['type']} input {dst_slot} is "
-                            f"{inputs[dst_slot].get('type')}")
+
+    for node in data["nodes"]:
+        for index, slot in enumerate(node.get("inputs") or []):
+            link_id = slot.get("link")
+            if link_id is None:
+                continue
+            if link_id not in links:
+                problems.append(f"{name}: {node['type']}.{slot.get('name')} is wired to "
+                                f"link {link_id}, which the file does not define")
+                continue
+            _src_id, _src_slot, link_type = links[link_id]
+            declared = slot.get("type")
+            if declared not in WILDCARD_TYPES and declared != link_type:
+                problems.append(f"{name}: {node['type']}.{slot.get('name')} "
+                                f"(input {index}) is {declared} but link {link_id} "
+                                f"carries {link_type}")
     assert not problems, "\n".join(problems)
 
 
