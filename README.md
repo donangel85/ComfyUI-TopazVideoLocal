@@ -179,6 +179,30 @@ A control that silently has no effect is worse than none — someone with stutte
 would spend an afternoon on it. `research/visual_check.py` keeps a check that fails if a
 future Topaz release starts documenting the parameter, at which point it can come back.
 
+## Frame interpolation: how many frames come back
+
+The count is not the round number people expect, and a *Create Video* node downstream has
+to agree with it or the clip runs at the wrong length. Measured on `apo-8`:
+
+| Mode | 24 frames at 24 fps become | Output fps |
+|---|---|---|
+| `target_fps` 48 | **47** | 48 |
+| `target_fps` 72 | **70** | 72 |
+| `target_fps` 96 | **93** | 96 |
+| `slowmo` 2× | 47 | 24 |
+| `slowmo` 4× | 93 | 24 |
+
+So `target_fps` at factor *k* returns **N·k − (k−1)**: interpolation makes the frames
+*between* the ones it was given, and there is no gap after the last one.
+
+`target_fps` keeps the running time — 1.000 s in, 0.979 s out at 2× — so the audio still
+fits. **`slowmo` does not**: same frame counts, but the rate stays put and the clip gets
+longer (1.000 s in, 1.958 s out). Wire the *input* fps into *Create Video* for slowmo, and
+handle the audio separately or leave it out.
+
+The node's second output, `output_fps`, already carries the right number for whichever
+mode is selected. Use it rather than typing the rate twice.
+
 ## And why there is no SAM2 mask node
 
 Same trap, second time. `tvai_up`'s help documents a group headed "Segment-Anything-2

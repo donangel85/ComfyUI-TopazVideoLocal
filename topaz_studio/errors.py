@@ -99,6 +99,15 @@ _ENCODER_SIGNATURES = (
     "error while opening encoder",
     "cannot load nvcuda",
     "openencodesessionex failed",
+    # The plainest case of all, and the one that was missing: the encoder is not in
+    # this build at all. Topaz's ffmpeg has no libx264, so a fallback list naming one
+    # would have been skipped entirely and the user handed a bare process failure.
+    # Found by research/untested_paths.py, which ran the fallback for the first time.
+    # FFmpeg says "Unknown decoder" for the other direction, so neither of these can be
+    # confused with a decoder problem.
+    "unknown encoder",
+    "error selecting an encoder",
+    "encoder not found",
 )
 
 _DECODER_SIGNATURES = (

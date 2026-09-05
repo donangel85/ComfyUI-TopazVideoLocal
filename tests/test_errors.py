@@ -93,3 +93,43 @@ def test_unknown_failure_keeps_stderr_for_debugging():
     err = classify(1, "something unexpected happened", output_encoder=None)
     assert isinstance(err, TopazProcessError)
     assert "something unexpected" in err.stderr
+
+
+# Verbatim from Topaz's own ffmpeg, asked for an encoder it does not have. This is the
+# case the signature list originally missed: everything in it described a *hardware*
+# encoder refusing to start, and nothing described an encoder that is simply absent.
+# Found by research/untested_paths.py, which ran the fallback path for the first time.
+MISSING_ENCODER_FAILURE = """
+[vost#0:0 @ 0000023EE847DB00] Unknown encoder 'libx264'
+[vost#0:0 @ 0000023EE847DB00] Error selecting an encoder
+Error opening output file -.
+Error opening output files: Encoder not found
+"""
+
+# The mirror image, which must NOT trigger an encoder fallback. FFmpeg words the two
+# differently on purpose, and the whole point of the classifier is not to confuse them.
+MISSING_DECODER_FAILURE = """
+[in#0 @ 0000023EE847DB00] Unknown decoder 'h264'
+Error opening input file input.mp4.
+Error opening input files: Decoder not found
+"""
+
+
+def test_an_encoder_that_is_not_in_the_build_is_an_encoder_failure():
+    """Topaz ships without libx264 (section 3.1), so this is the likely case in
+    practice, not an exotic one. Before the fix the fallback list was skipped and the
+    user got a bare process error instead of an automatic retry."""
+    assert is_encoder_failure(MISSING_ENCODER_FAILURE, "libx264") is True
+    err = classify(1, MISSING_ENCODER_FAILURE, output_encoder="libx264")
+    assert isinstance(err, TopazEncodeError)
+
+
+def test_a_missing_decoder_is_not_an_encoder_failure():
+    """'Unknown decoder' must not match 'unknown encoder'. Retrying with a different
+    encoder cannot fix an input the build cannot read, and trying is exactly the loop
+    the old node got stuck in."""
+    assert is_encoder_failure(MISSING_DECODER_FAILURE, "utvideo") is False
+
+
+def test_a_missing_encoder_still_needs_an_encoder_in_the_command():
+    assert is_encoder_failure(MISSING_ENCODER_FAILURE, None) is False
