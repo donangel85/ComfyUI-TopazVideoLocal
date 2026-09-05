@@ -1,7 +1,7 @@
 {
   "id": "05-presets-and-tuning",
   "revision": 0,
-  "last_node_id": 5,
+  "last_node_id": 6,
   "last_link_id": 4,
   "nodes": [
     {
@@ -13,7 +13,7 @@
       ],
       "size": [
         330,
-        50
+        314
       ],
       "flags": {},
       "order": 0,
@@ -46,12 +46,12 @@
       "id": 2,
       "type": "TopazStudioUpscaleParams",
       "pos": [
-        420,
-        -200
+        361.30489084034645,
+        2.0651298938895044
       ],
       "size": [
         330,
-        410
+        466
       ],
       "flags": {},
       "order": 1,
@@ -93,12 +93,12 @@
       "id": 3,
       "type": "TopazStudioEngineSettings",
       "pos": [
-        420,
-        320
+        364.1915355531164,
+        535.5361385534824
       ],
       "size": [
         330,
-        290
+        298
       ],
       "flags": {},
       "order": 2,
@@ -135,8 +135,8 @@
       "id": 4,
       "type": "TopazStudioImageUpscale",
       "pos": [
-        860,
-        0
+        762.8162946700825,
+        1.924429808513234
       ],
       "size": [
         330,
@@ -194,14 +194,16 @@
       "id": 5,
       "type": "SaveImage",
       "pos": [
-        1280,
-        0
+        1146.2521283083308,
+        0.9622149042566167
       ],
       "size": [
-        330,
-        76
+        693.7172338090008,
+        571.5406756921577
       ],
-      "flags": {},
+      "flags": {
+        "collapsed": false
+      },
       "order": 4,
       "mode": 0,
       "inputs": [
@@ -218,6 +220,31 @@
       "widgets_values": [
         "topaz/tuned"
       ]
+    },
+    {
+      "id": 6,
+      "type": "MarkdownNote",
+      "pos": [
+        -620,
+        0
+      ],
+      "size": [
+        560,
+        420
+      ],
+      "flags": {},
+      "order": 5,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [],
+      "properties": {
+        "Node name for S&R": "MarkdownNote"
+      },
+      "widgets_values": [
+        "## Video is the main job here\n\nTopaz Video AI is a **video** product, and so is this pack. The examples start from\n`Load Image` only because a still is the quickest thing to try.\n\n**To run this on video, change the two ends:**\n\n| Replace | With |\n|---|---|\n| `Load Image` | `Load Video` -> `Get Video Components` (images / audio / fps) |\n| `Save Image` | `Create Video` (images + fps + audio) -> `Save Video` |\n\nEverything between them stays exactly as it is. Every Topaz node takes a plain IMAGE\nbatch and does not care where the frames came from.\n\nWire `fps` from `Get Video Components` into the Topaz node's `fps` widget and into\n`Create Video`, and pass `audio` straight across — the frames go through Topaz, the\nsound goes around it.\n\nSee `07_video_upscale.json` for that graph already built."
+      ],
+      "color": "#432",
+      "bgcolor": "#653"
     }
   ],
   "links": [
@@ -261,8 +288,8 @@
       "bounding": [
         -20,
         -80,
-        1500,
-        60
+        1888.6385998292476,
+        927.6291791681915
       ],
       "color": "#3f789e",
       "font_size": 20,
@@ -272,12 +299,14 @@
   "config": {},
   "extra": {
     "ds": {
-      "scale": 0.85,
+      "scale": 1.0392688739035643,
       "offset": [
-        120,
-        200
+        428.99687766800844,
+        567.4937431394076
       ]
-    }
+    },
+    "ue_links": [],
+    "anomalous_hashes": {}
   },
   "version": 0.4
 }

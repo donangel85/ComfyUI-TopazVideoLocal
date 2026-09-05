@@ -1,0 +1,521 @@
+{
+  "id": "09-video-restore-chain",
+  "revision": 0,
+  "last_node_id": 8,
+  "last_link_id": 11,
+  "nodes": [
+    {
+      "id": 1,
+      "type": "LoadVideo",
+      "pos": [
+        0,
+        0
+      ],
+      "size": [
+        330,
+        50
+      ],
+      "flags": {},
+      "order": 0,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "VIDEO",
+          "type": "VIDEO",
+          "links": [
+            1
+          ],
+          "slot_index": 0
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "LoadVideo"
+      },
+      "widgets_values": [
+        "example.mp4"
+      ]
+    },
+    {
+      "id": 2,
+      "type": "GetVideoComponents",
+      "pos": [
+        380,
+        0
+      ],
+      "size": [
+        330,
+        76
+      ],
+      "flags": {},
+      "order": 1,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "video",
+          "type": "VIDEO",
+          "link": 1
+        }
+      ],
+      "outputs": [
+        {
+          "name": "images",
+          "type": "IMAGE",
+          "links": [
+            2
+          ],
+          "slot_index": 0
+        },
+        {
+          "name": "audio",
+          "type": "AUDIO",
+          "links": [
+            10
+          ],
+          "slot_index": 1
+        },
+        {
+          "name": "fps",
+          "type": "FLOAT",
+          "links": [
+            3,
+            5,
+            7,
+            9
+          ],
+          "slot_index": 2
+        },
+        {
+          "name": "bit_depth",
+          "type": "COMBO",
+          "links": [],
+          "slot_index": 3
+        },
+        {
+          "name": "color_space",
+          "type": "COMBO",
+          "links": [],
+          "slot_index": 4
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "GetVideoComponents"
+      },
+      "widgets_values": []
+    },
+    {
+      "id": 3,
+      "type": "TopazStudioDeinterlace",
+      "pos": [
+        760,
+        0
+      ],
+      "size": [
+        330,
+        176
+      ],
+      "flags": {},
+      "order": 2,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "images",
+          "type": "IMAGE",
+          "link": 2
+        },
+        {
+          "name": "params",
+          "type": "TOPAZ_UPSCALE_PARAMS",
+          "link": null
+        },
+        {
+          "name": "engine",
+          "type": "TOPAZ_ENGINE",
+          "link": null
+        },
+        {
+          "name": "fps",
+          "type": "FLOAT",
+          "link": 3,
+          "widget": {
+            "name": "fps"
+          }
+        }
+      ],
+      "outputs": [
+        {
+          "name": "images",
+          "type": "IMAGE",
+          "links": [
+            4
+          ],
+          "slot_index": 0
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "TopazStudioDeinterlace"
+      },
+      "widgets_values": [
+        "Dione DV (ddv-3)",
+        1,
+        25.0
+      ]
+    },
+    {
+      "id": 4,
+      "type": "TopazStudioStabilize",
+      "pos": [
+        1140,
+        0
+      ],
+      "size": [
+        330,
+        342
+      ],
+      "flags": {},
+      "order": 3,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "images",
+          "type": "IMAGE",
+          "link": 4
+        },
+        {
+          "name": "engine",
+          "type": "TOPAZ_ENGINE",
+          "link": null
+        },
+        {
+          "name": "fps",
+          "type": "FLOAT",
+          "link": 5,
+          "widget": {
+            "name": "fps"
+          }
+        }
+      ],
+      "outputs": [
+        {
+          "name": "images",
+          "type": "IMAGE",
+          "links": [
+            6
+          ],
+          "slot_index": 0
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "TopazStudioStabilize"
+      },
+      "widgets_values": [
+        "Stabilization (ref-2)",
+        24.0,
+        "auto_crop",
+        6.0,
+        true,
+        true,
+        true,
+        true,
+        false,
+        0,
+        2.0
+      ]
+    },
+    {
+      "id": 5,
+      "type": "TopazStudioUpscale",
+      "pos": [
+        1520,
+        0
+      ],
+      "size": [
+        330,
+        298
+      ],
+      "flags": {},
+      "order": 4,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "images",
+          "type": "IMAGE",
+          "link": 6
+        },
+        {
+          "name": "params",
+          "type": "TOPAZ_UPSCALE_PARAMS",
+          "link": null
+        },
+        {
+          "name": "upscale_chain",
+          "type": "TOPAZ_UPSCALE_CHAIN",
+          "link": null
+        },
+        {
+          "name": "engine",
+          "type": "TOPAZ_ENGINE",
+          "link": null
+        },
+        {
+          "name": "fps",
+          "type": "FLOAT",
+          "link": 7,
+          "widget": {
+            "name": "fps"
+          }
+        }
+      ],
+      "outputs": [
+        {
+          "name": "images",
+          "type": "IMAGE",
+          "links": [
+            8
+          ],
+          "slot_index": 0
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "TopazStudioUpscale"
+      },
+      "widgets_values": [
+        "Proteus (prob-4)",
+        "factor",
+        2,
+        24.0,
+        1920,
+        1088,
+        "fit"
+      ]
+    },
+    {
+      "id": 6,
+      "type": "CreateVideo",
+      "pos": [
+        1900,
+        0
+      ],
+      "size": [
+        330,
+        102
+      ],
+      "flags": {},
+      "order": 5,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "images",
+          "type": "IMAGE",
+          "link": 8
+        },
+        {
+          "name": "audio",
+          "type": "AUDIO",
+          "link": 10
+        },
+        {
+          "name": "fps",
+          "type": "FLOAT",
+          "link": 9,
+          "widget": {
+            "name": "fps"
+          }
+        }
+      ],
+      "outputs": [
+        {
+          "name": "VIDEO",
+          "type": "VIDEO",
+          "links": [
+            11
+          ],
+          "slot_index": 0
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "CreateVideo"
+      },
+      "widgets_values": [
+        24.0
+      ]
+    },
+    {
+      "id": 7,
+      "type": "SaveVideo",
+      "pos": [
+        2280,
+        0
+      ],
+      "size": [
+        330,
+        76
+      ],
+      "flags": {},
+      "order": 6,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "video",
+          "type": "VIDEO",
+          "link": 11
+        }
+      ],
+      "outputs": [
+        {
+          "name": "video",
+          "type": "VIDEO",
+          "links": [],
+          "slot_index": 0
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "SaveVideo"
+      },
+      "widgets_values": [
+        "video/topaz_restored"
+      ]
+    },
+    {
+      "id": 8,
+      "type": "MarkdownNote",
+      "pos": [
+        -620,
+        0
+      ],
+      "size": [
+        560,
+        420
+      ],
+      "flags": {},
+      "order": 7,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [],
+      "properties": {
+        "Node name for S&R": "MarkdownNote"
+      },
+      "widgets_values": [
+        "## Order matters, and so does leaving passes out\n\n**Deinterlace, then stabilise, then enlarge.** Each pass wants the one before it done:\ncombing confuses motion estimation, and enlarging first means everything after it works\non four times the pixels for no gain.\n\n**Run only the passes the footage needs.** Every one of these is a model rebuilding the\npicture, and a rebuild is never free. Measured on real, already-sharp frames, motion\ndeblur alone costs about 8% of the gradient energy. Deinterlace on progressive footage\nand stabilisation on a locked-off shot are the same kind of waste.\n\nBypass a node you do not need (**Ctrl+B**) rather than deleting it, and the graph stays\nreadable.\n\n**Stabilisation resamples back to the input size.** `auto_crop` cuts into the picture by\nhowever much the camera actually moved — 320x240 came back as 312x232 on a gentle shake\nand 252x188 on a strong one — so the node scales the result back to the size it was\nhanded. An IMAGE batch has to be one size throughout."
+      ],
+      "color": "#432",
+      "bgcolor": "#653"
+    }
+  ],
+  "links": [
+    [
+      1,
+      1,
+      0,
+      2,
+      0,
+      "VIDEO"
+    ],
+    [
+      2,
+      2,
+      0,
+      3,
+      0,
+      "IMAGE"
+    ],
+    [
+      3,
+      2,
+      2,
+      3,
+      3,
+      "FLOAT"
+    ],
+    [
+      4,
+      3,
+      0,
+      4,
+      0,
+      "IMAGE"
+    ],
+    [
+      5,
+      2,
+      2,
+      4,
+      2,
+      "FLOAT"
+    ],
+    [
+      6,
+      4,
+      0,
+      5,
+      0,
+      "IMAGE"
+    ],
+    [
+      7,
+      2,
+      2,
+      5,
+      4,
+      "FLOAT"
+    ],
+    [
+      8,
+      5,
+      0,
+      6,
+      0,
+      "IMAGE"
+    ],
+    [
+      9,
+      2,
+      2,
+      6,
+      2,
+      "FLOAT"
+    ],
+    [
+      10,
+      2,
+      1,
+      6,
+      1,
+      "AUDIO"
+    ],
+    [
+      11,
+      6,
+      0,
+      7,
+      0,
+      "VIDEO"
+    ]
+  ],
+  "groups": [
+    {
+      "id": 1,
+      "title": "Deinterlace, then stabilise, then enlarge - in that order, and only the passes the footage actually needs.",
+      "bounding": [
+        -20,
+        -80,
+        1500,
+        60
+      ],
+      "color": "#3f789e",
+      "font_size": 20,
+      "flags": {}
+    }
+  ],
+  "config": {},
+  "extra": {
+    "ds": {
+      "scale": 0.85,
+      "offset": [
+        120,
+        200
+      ]
+    }
+  },
+  "version": 0.4
+}

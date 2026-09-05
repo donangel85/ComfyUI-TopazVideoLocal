@@ -21,8 +21,46 @@ mklink /J "F:\ComfyUI\custom_nodes\ComfyUI-TopazStudio" "D:\TopazLab-Studio\Comf
 Restart ComfyUI. Start with the **Topaz Diagnostics** node — it reports what was found
 and what is missing, without running a workflow.
 
-Then open one of the [example workflows](examples/) — `01_basic_upscale.json` is the
-smallest useful graph.
+Then open one of the [example workflows](examples/). `07_video_upscale.json` is the
+graph this pack exists for; `01_basic_upscale.json` is the smallest possible one.
+
+## Video is the main job
+
+Topaz Video AI is a video product, and so is this pack. Every node takes a plain IMAGE
+batch, which is also what a still is, so the same graph does both — but the case it was
+built for is a clip.
+
+```
+Load Video → Get Video Components → Topaz Video Upscale → Create Video → Save Video
+                    │  fps ──────────────────^                 ^   ^
+                    │  audio ──────────────────────────────────┘   │
+                    └──fps ────────────────────────────────────────┘
+```
+
+All four of those are ComfyUI's own nodes; nothing extra to install. To turn any of the
+still-image examples into a video graph, change only the two ends:
+
+| Replace | With |
+|---|---|
+| `Load Image` | `Load Video` → `Get Video Components` |
+| `Save Image` | `Create Video` → `Save Video` |
+
+Everything in between stays exactly as it is. **For most work the only thing to change
+is the preset** in *Topaz Upscale Params*.
+
+Three wires are easy to miss:
+
+- **`fps` into the Topaz node.** The motion models use it, and reading it off the clip
+  beats typing a number that then disagrees with the source.
+- **`fps` into *Create Video***, or the clip plays at the wrong speed. After frame
+  interpolation take `output_fps` from the interpolation node instead — that is what its
+  second output is for.
+- **`audio` straight across.** An IMAGE batch carries no sound, so audio goes *around*
+  the Topaz node and is reattached at *Create Video*, untouched and without a re-encode.
+
+**Memory is the practical limit.** The whole clip is decoded into one IMAGE batch before
+anything runs. At 1080p a few hundred frames is already several gigabytes, and a 2×
+output is four times that again. Cut long clips into pieces, or enlarge last.
 
 ## Nodes
 
@@ -142,6 +180,32 @@ A control that silently has no effect is worse than none — someone with stutte
 would spend an afternoon on it. `research/visual_check.py` keeps a check that fails if a
 future Topaz release starts documenting the parameter, at which point it can come back.
 
+## What the picture actually does
+
+Structure is easy to test and says nothing about whether the result looks right. These
+are measurements of the picture itself, on real 1080p footage rather than test patterns.
+The method throughout is the same: degrade real frames in a known way, or hold the real
+frames back as a reference, so there is always a right answer to score against.
+
+| Case | Measured |
+|---|---|
+| **2× upscale** vs a plain Lanczos resize, scored against the original frames | **28.56 dB / SSIM 0.928** against Lanczos's 27.75 dB / 0.919 — better on both, and the recovered detail lands short of the original rather than past it, so it is recovered and not invented |
+| **A photograph**, same round trip | **26.86 dB / SSIM 0.934** against Lanczos's 25.28 / 0.914 |
+| **Deinterlace** (`ddv-3`) on real frames woven into fields | **77% of the combing removed** |
+| **Frame interpolation** (`apo-8`) 24 → 48 fps on real motion | 24 frames became 47; frame-to-frame difference fell 0.083 → 0.050, with no duplicated frames standing in |
+| **Stabilisation** (`ref-2`), real frames given a known ±6 px shake | **97% of it taken out** — 6.86 px of wobble down to 0.18 px |
+| **Motion deblur** (`thm-2`) against a known blur | **18% of the destroyed detail recovered**, and 24.29 dB → 26.97 dB towards the sharp original |
+| **The `compression` parameter** on footage re-encoded at CRF 45 | Reduces the visible block grid, but only slightly. Real damage of that severity does not come out |
+
+**Motion deblur is a repair pass, not a sharpener.** Run on footage that was already
+sharp it costs about 8% of the gradient energy (37.2 dB / SSIM 0.978 against the
+untouched frames). Mild, but there is no reason to pay it: put it in the graph when
+there is motion blur to remove, and bypass it otherwise. The same goes for deinterlacing
+progressive footage and stabilising a locked-off shot.
+
+Reproduce with `research/visual_check.py` (synthetic material, known defects) and
+`research/real_material_check.py` (real clips). Both write pictures next to the numbers.
+
 ## Letting Topaz choose the parameters
 
 **Topaz Parameter Estimate** runs `tvai_pe` over the batch and reports the tuning it would
@@ -236,10 +300,15 @@ a browser being involved.
 ## What about audio?
 
 Nothing is lost. These nodes are `IMAGE` → `IMAGE`, and a ComfyUI IMAGE batch has never
-carried audio — it is just frames. Your audio travels its own path through the workflow
-and is attached wherever you write the video, for example by the `AUDIO` input of
-Video Helper Suite's *Video Combine*. Route the audio straight from your source node to
-the save node and it arrives untouched, without a re-encode.
+carried audio — it is just frames. The audio travels its own path through the workflow
+and is attached where the video is written: the `audio` output of *Get Video Components*
+goes straight into the `audio` input of *Create Video*, or into the `AUDIO` input of
+Video Helper Suite's *Video Combine* if you use that instead. Either way it arrives
+untouched, without a re-encode.
+
+One exception: **frame interpolation in `slowmo` mode makes the picture longer than the
+sound.** In `target_fps` mode the running time is unchanged and the audio still fits;
+in `slowmo` it does not, so stretch it separately or leave it out.
 
 ## How it works, and why
 

@@ -1,7 +1,7 @@
 {
   "id": "01-basic-upscale",
   "revision": 0,
-  "last_node_id": 3,
+  "last_node_id": 4,
   "last_link_id": 2,
   "nodes": [
     {
@@ -13,7 +13,7 @@
       ],
       "size": [
         330,
-        50
+        314
       ],
       "flags": {},
       "order": 0,
@@ -109,8 +109,8 @@
         0
       ],
       "size": [
-        330,
-        76
+        637.5439541407491,
+        475.4980509818271
       ],
       "flags": {},
       "order": 2,
@@ -129,6 +129,31 @@
       "widgets_values": [
         "topaz/upscaled"
       ]
+    },
+    {
+      "id": 4,
+      "type": "MarkdownNote",
+      "pos": [
+        -620,
+        0
+      ],
+      "size": [
+        560,
+        420
+      ],
+      "flags": {},
+      "order": 3,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [],
+      "properties": {
+        "Node name for S&R": "MarkdownNote"
+      },
+      "widgets_values": [
+        "## Video is the main job here\n\nTopaz Video AI is a **video** product, and so is this pack. The examples start from\n`Load Image` only because a still is the quickest thing to try.\n\n**To run this on video, change the two ends:**\n\n| Replace | With |\n|---|---|\n| `Load Image` | `Load Video` -> `Get Video Components` (images / audio / fps) |\n| `Save Image` | `Create Video` (images + fps + audio) -> `Save Video` |\n\nEverything between them stays exactly as it is. Every Topaz node takes a plain IMAGE\nbatch and does not care where the frames came from.\n\nWire `fps` from `Get Video Components` into the Topaz node's `fps` widget and into\n`Create Video`, and pass `audio` straight across — the frames go through Topaz, the\nsound goes around it.\n\nSee `07_video_upscale.json` for that graph already built."
+      ],
+      "color": "#432",
+      "bgcolor": "#653"
     }
   ],
   "links": [
@@ -156,8 +181,8 @@
       "bounding": [
         -20,
         -80,
-        1500,
-        60
+        1518.1126389071842,
+        570.569327283815
       ],
       "color": "#3f789e",
       "font_size": 20,
@@ -167,12 +192,14 @@
   "config": {},
   "extra": {
     "ds": {
-      "scale": 0.85,
+      "scale": 1.0695239344037846,
       "offset": [
-        120,
-        200
+        621.4609787047194,
+        686.3058306622756
       ]
-    }
+    },
+    "ue_links": [],
+    "anomalous_hashes": {}
   },
   "version": 0.4
 }

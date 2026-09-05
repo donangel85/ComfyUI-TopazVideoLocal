@@ -13,8 +13,13 @@ user_presets.json
 *.log
 temp/
 
-# Research and documentation live OUTSIDE this repository (siblings in the
-# parent folder) so they cannot be committed by accident. These entries only
-# matter if the repository is ever moved.
+# Research, documentation and test footage live OUTSIDE this repository (siblings
+# in the parent folder) so they cannot be committed by accident. These entries
+# only matter if the repository is ever moved.
 research/
 docs/
+
+# The owner's own video and photographs, used to verify the nodes against real
+# material. Never part of the package and never published.
+Testmaterial/
+testmaterial/

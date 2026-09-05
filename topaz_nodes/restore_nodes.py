@@ -197,7 +197,12 @@ class TopazMotionDeblur:
     CATEGORY = CATEGORY
     DESCRIPTION = ("Reduce motion blur with Topaz's Themis model. Resolution is "
                    "unchanged — Themis supports scale 1 only; chain an Upscale node "
-                   "afterwards if you also want more resolution.")
+                   "afterwards if you also want more resolution.\n\n"
+                   "A repair pass, not a sharpener. Measured on real footage it gives "
+                   "back about a fifth of what a genuine motion blur destroys, and "
+                   "costs roughly 8% of the picture's gradient energy when run on "
+                   "frames that were sharp to begin with. Put it in the graph where "
+                   "there is blur to remove and bypass it otherwise.")
 
     def deblur(self, images, model, fps, params=None, engine=None):
         settings: EngineSettings = settings_from_input(engine)

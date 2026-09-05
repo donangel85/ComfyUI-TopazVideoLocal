@@ -1,0 +1,424 @@
+{
+  "id": "07-video-upscale",
+  "revision": 0,
+  "last_node_id": 7,
+  "last_link_id": 8,
+  "nodes": [
+    {
+      "id": 1,
+      "type": "LoadVideo",
+      "pos": [
+        0,
+        0
+      ],
+      "size": [
+        330,
+        50
+      ],
+      "flags": {},
+      "order": 0,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "VIDEO",
+          "type": "VIDEO",
+          "links": [
+            1
+          ],
+          "slot_index": 0
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "LoadVideo"
+      },
+      "widgets_values": [
+        "example.mp4"
+      ]
+    },
+    {
+      "id": 2,
+      "type": "GetVideoComponents",
+      "pos": [
+        380,
+        0
+      ],
+      "size": [
+        330,
+        76
+      ],
+      "flags": {},
+      "order": 1,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "video",
+          "type": "VIDEO",
+          "link": 1
+        }
+      ],
+      "outputs": [
+        {
+          "name": "images",
+          "type": "IMAGE",
+          "links": [
+            2
+          ],
+          "slot_index": 0
+        },
+        {
+          "name": "audio",
+          "type": "AUDIO",
+          "links": [
+            7
+          ],
+          "slot_index": 1
+        },
+        {
+          "name": "fps",
+          "type": "FLOAT",
+          "links": [
+            3,
+            6
+          ],
+          "slot_index": 2
+        },
+        {
+          "name": "bit_depth",
+          "type": "COMBO",
+          "links": [],
+          "slot_index": 3
+        },
+        {
+          "name": "color_space",
+          "type": "COMBO",
+          "links": [],
+          "slot_index": 4
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "GetVideoComponents"
+      },
+      "widgets_values": []
+    },
+    {
+      "id": 3,
+      "type": "TopazStudioUpscaleParams",
+      "pos": [
+        760,
+        -300
+      ],
+      "size": [
+        330,
+        410
+      ],
+      "flags": {},
+      "order": 2,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "params",
+          "type": "TOPAZ_UPSCALE_PARAMS",
+          "links": [
+            4
+          ],
+          "slot_index": 0
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "TopazStudioUpscaleParams"
+      },
+      "widgets_values": [
+        "AI-generated video",
+        1.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        "default",
+        0.0,
+        true,
+        0,
+        false
+      ],
+      "title": "Params: pick a preset here"
+    },
+    {
+      "id": 4,
+      "type": "TopazStudioUpscale",
+      "pos": [
+        760,
+        60
+      ],
+      "size": [
+        330,
+        298
+      ],
+      "flags": {},
+      "order": 3,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "images",
+          "type": "IMAGE",
+          "link": 2
+        },
+        {
+          "name": "params",
+          "type": "TOPAZ_UPSCALE_PARAMS",
+          "link": 4
+        },
+        {
+          "name": "upscale_chain",
+          "type": "TOPAZ_UPSCALE_CHAIN",
+          "link": null
+        },
+        {
+          "name": "engine",
+          "type": "TOPAZ_ENGINE",
+          "link": null
+        },
+        {
+          "name": "fps",
+          "type": "FLOAT",
+          "link": 3,
+          "widget": {
+            "name": "fps"
+          }
+        }
+      ],
+      "outputs": [
+        {
+          "name": "images",
+          "type": "IMAGE",
+          "links": [
+            5
+          ],
+          "slot_index": 0
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "TopazStudioUpscale"
+      },
+      "widgets_values": [
+        "Proteus (prob-4)",
+        "factor",
+        2,
+        24.0,
+        1920,
+        1088,
+        "fit"
+      ]
+    },
+    {
+      "id": 5,
+      "type": "CreateVideo",
+      "pos": [
+        1180,
+        60
+      ],
+      "size": [
+        330,
+        102
+      ],
+      "flags": {},
+      "order": 4,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "images",
+          "type": "IMAGE",
+          "link": 5
+        },
+        {
+          "name": "audio",
+          "type": "AUDIO",
+          "link": 7
+        },
+        {
+          "name": "fps",
+          "type": "FLOAT",
+          "link": 6,
+          "widget": {
+            "name": "fps"
+          }
+        }
+      ],
+      "outputs": [
+        {
+          "name": "VIDEO",
+          "type": "VIDEO",
+          "links": [
+            8
+          ],
+          "slot_index": 0
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "CreateVideo"
+      },
+      "widgets_values": [
+        24.0
+      ]
+    },
+    {
+      "id": 6,
+      "type": "SaveVideo",
+      "pos": [
+        1560,
+        60
+      ],
+      "size": [
+        330,
+        76
+      ],
+      "flags": {},
+      "order": 5,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "video",
+          "type": "VIDEO",
+          "link": 8
+        }
+      ],
+      "outputs": [
+        {
+          "name": "video",
+          "type": "VIDEO",
+          "links": [],
+          "slot_index": 0
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "SaveVideo"
+      },
+      "widgets_values": [
+        "video/topaz_2x"
+      ]
+    },
+    {
+      "id": 7,
+      "type": "MarkdownNote",
+      "pos": [
+        -620,
+        0
+      ],
+      "size": [
+        560,
+        420
+      ],
+      "flags": {},
+      "order": 6,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [],
+      "properties": {
+        "Node name for S&R": "MarkdownNote"
+      },
+      "widgets_values": [
+        "## The graph the pack was built for\n\n```\nLoad Video -> Get Video Components -> Topaz Video Upscale -> Create Video -> Save Video\n                     |  fps ------------------^                  ^  ^\n                     |  audio -------------------------------------  |\n                     +--fps ----------------------------------------+\n```\n\n**To change what it does, change the preset** in *Topaz Upscale Params* — that is the\none knob most work needs. Picking a profile copies its values into the sliders and\nswitches `edit_preset_values` on, so you can adjust from there; switch it off to compare\nagainst the untouched preset.\n\n**Three wires are easy to miss:**\n\n- `fps` into the Topaz node. The motion models use it. Wiring it from the clip beats\n  typing a number that then disagrees with the source.\n- `fps` into *Create Video*, or the result plays at the wrong speed.\n- `audio` straight from *Get Video Components* into *Create Video*. An IMAGE batch\n  carries no sound, so it goes around the Topaz node rather than through it.\n\n**Memory.** The whole clip is decoded into an IMAGE batch before anything runs. At 1080p\na few hundred frames is already several gigabytes, and the 2x output is four times that\nagain. Cut long clips into pieces, or work at a lower resolution and enlarge last."
+      ],
+      "color": "#432",
+      "bgcolor": "#653"
+    }
+  ],
+  "links": [
+    [
+      1,
+      1,
+      0,
+      2,
+      0,
+      "VIDEO"
+    ],
+    [
+      2,
+      2,
+      0,
+      4,
+      0,
+      "IMAGE"
+    ],
+    [
+      3,
+      2,
+      2,
+      4,
+      4,
+      "FLOAT"
+    ],
+    [
+      4,
+      3,
+      0,
+      4,
+      1,
+      "TOPAZ_UPSCALE_PARAMS"
+    ],
+    [
+      5,
+      4,
+      0,
+      5,
+      0,
+      "IMAGE"
+    ],
+    [
+      6,
+      2,
+      2,
+      5,
+      2,
+      "FLOAT"
+    ],
+    [
+      7,
+      2,
+      1,
+      5,
+      1,
+      "AUDIO"
+    ],
+    [
+      8,
+      5,
+      0,
+      6,
+      0,
+      "VIDEO"
+    ]
+  ],
+  "groups": [
+    {
+      "id": 1,
+      "title": "The main case: a whole clip through Topaz, audio carried around the outside and put back at the end.",
+      "bounding": [
+        -20,
+        -80,
+        1500,
+        60
+      ],
+      "color": "#3f789e",
+      "font_size": 20,
+      "flags": {}
+    }
+  ],
+  "config": {},
+  "extra": {
+    "ds": {
+      "scale": 0.85,
+      "offset": [
+        120,
+        200
+      ]
+    }
+  },
+  "version": 0.4
+}
