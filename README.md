@@ -77,7 +77,6 @@ output is four times that again. Cut long clips into pieces, or enlarge last.
 | **Topaz Upscale Stage** | One pass of a multi-pass upscale. Chain several for Proteus → Rhea → … in a single run. Optional. |
 | **Topaz Upscale Params** | Ready-made profiles, or manual control over preblur, noise, details, halo, blur, compression, grain, blend. Optional. |
 | **Topaz Hyperion HDR Params** | SDR → HDR parameters for `hyp-1`. Optional. |
-| **Topaz SAM2 Mask** | Segment-Anything-2 click expression for object-aware processing. Optional. |
 | **Topaz Resolution** | Named output sizes with orientation and a divisibility constraint. Outputs plain INTs, so it drives other nodes too. Optional. |
 | **Topaz Diagnostics** | Installation, codecs, models, licence and CLI-lock status. |
 
@@ -179,6 +178,27 @@ through at exactly the speed it went in.
 A control that silently has no effect is worse than none — someone with stuttering output
 would spend an afternoon on it. `research/visual_check.py` keeps a check that fails if a
 future Topaz release starts documenting the parameter, at which point it can come back.
+
+## And why there is no SAM2 mask node
+
+Same trap, second time. `tvai_up`'s help documents a group headed "Segment-Anything-2
+(vsam) parameters" with a `clicks` key and a grammar for it, and there was a node here
+that sent one. **That heading names a model, and this Topaz build does not have one.**
+
+```
+model=vsam             ->  "Invalid value vsam for model, model should be in the
+                            following list:"  ... and then all 51 it does accept.
+                           Identical to the rejection of a name invented on the spot,
+                           and different from the -22 a model with no weights gives.
+clicks on prob-4       ->  exits 0, output unchanged
+nonsense=42 on prob-4  ->  exits 0, output unchanged      (the control)
+```
+
+`parameters` is a dictionary option, so a key an upscale model has no use for is dropped
+without a word. The node could never have done anything. It is gone; `research/probe_sam2.py`
+holds the measurements and fails if `vsam` ever becomes a model this installation
+accepts, which is when it should be rebuilt — against `model=vsam`, not as parameters on
+something else.
 
 ## What the picture actually does
 

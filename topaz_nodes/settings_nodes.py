@@ -307,44 +307,28 @@ class TopazHyperionParams:
         },)
 
 
-class TopazSAM2Mask:
-    """Segment-Anything-2 click expression for tvai_up.
-
-    Topaz's syntax is dense; the example from its own help is:
-
-        c0c1_2f0o0px1230y210x1260y390mx1218y561
-
-      c  which objects land on which channel, read in order
-      f  frame number the following clicks apply to
-      o  object index
-      p  a positive click, m a negative one
-      x/y  coordinates, absolute pixels or normalised 0..1
-
-    Passed through unmodified rather than wrapped in widgets: the grammar is positional
-    and any simplification here would hide most of what it can express.
-    """
-
-    @classmethod
-    def INPUT_TYPES(cls):
-        return {
-            "required": {
-                "clicks": ("STRING", {
-                    "default": "",
-                    "multiline": True,
-                    "tooltip": "Click expression, e.g. "
-                               "c0f0o0px0.5y0.5 puts a positive click at the centre "
-                               "of frame 0 for object 0 on channel 0.",
-                }),
-            }
-        }
-
-    RETURN_TYPES = ("TOPAZ_UPSCALE_PARAMS",)
-    RETURN_NAMES = ("params",)
-    FUNCTION = "build"
-    CATEGORY = CATEGORY
-
-    def build(self, clicks):
-        text = str(clicks).strip()
-        if not text:
-            return ({},)
-        return ({"_extra_parameters": {"clicks": text}},)
+# There was a TopazSAM2Mask node here, feeding a Segment-Anything-2 click expression
+# into `tvai_up`'s `parameters` dictionary. It was removed because it could not work,
+# and this is the second time the same trap has caught this package.
+#
+# `ffmpeg -h filter=tvai_up` documents a parameter group headed "Segment-Anything-2
+# (vsam) parameters", with a `clicks` key and a grammar for it. That heading names a
+# *model*, and this Topaz build does not have one:
+#
+#   model=vsam            ->  "Invalid value vsam for model, model should be in the
+#                              following list:" followed by all 51 accepted models.
+#                             Byte for byte the same rejection as a name invented on
+#                             the spot, and a different error from the -22 that a
+#                             model with no local weights gives.
+#   clicks on prob-4      ->  exits 0, output unchanged.
+#   nonsense=42 on prob-4 ->  exits 0, output unchanged. The control.
+#
+# `parameters` is an AV_OPT_TYPE_DICT, so `clicks` on a model that has no use for it is
+# swallowed in silence exactly like a key that does not exist — the same thing that made
+# the `field_order` switch look like it worked (see TopazDeinterlace). A node that
+# quietly does nothing is worse than no node: someone wires it up, sees no mask, and
+# looks everywhere except at the control itself.
+#
+# Removed while the package is unpublished, as `field_order` was. `research/probe_sam2.py`
+# holds the measurements and fails if a future Topaz release starts accepting `vsam`,
+# at which point the node can come back.

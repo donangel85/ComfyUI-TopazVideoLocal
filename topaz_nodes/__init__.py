@@ -9,7 +9,6 @@ from .upscale_chain import TopazUpscaleStage
 from .settings_nodes import (
     TopazEngineSettings,
     TopazHyperionParams,
-    TopazSAM2Mask,
     TopazUpscaleParams,
 )
 from .video_interpolate import TopazVideoInterpolate
@@ -29,7 +28,6 @@ NODE_CLASS_MAPPINGS = {
     "TopazStudioUpscaleParams": TopazUpscaleParams,
     "TopazStudioUpscaleStage": TopazUpscaleStage,
     "TopazStudioHyperionParams": TopazHyperionParams,
-    "TopazStudioSAM2Mask": TopazSAM2Mask,
     "TopazStudioDiagnostics": TopazDiagnostics,
 }
 
@@ -46,7 +44,6 @@ NODE_DISPLAY_NAME_MAPPINGS = {
     "TopazStudioUpscaleParams": "Topaz Upscale Params",
     "TopazStudioUpscaleStage": "Topaz Upscale Stage",
     "TopazStudioHyperionParams": "Topaz Hyperion HDR Params",
-    "TopazStudioSAM2Mask": "Topaz SAM2 Mask",
     "TopazStudioDiagnostics": "Topaz Diagnostics",
 }
 
