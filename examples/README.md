@@ -53,14 +53,16 @@ They are also opened in ComfyUI and arranged by hand, which is why regenerating 
 each node's position, size and title over from the file on disk. Only values, wiring and
 node membership come from the generator.
 
-```bash
-research/testenv/Scripts/python.exe research/make_examples.py           # rewrite
-research/testenv/Scripts/python.exe research/make_examples.py --check   # compare only
-```
+The generator itself is a maintainer's tool and lives outside the package, so it is not
+in this repository. What *is* here is `tests/test_examples.py`, which makes the same
+comparison as part of the normal test suite — widget counts, combo membership, numeric
+ranges, link endpoints, and that no third-party node has crept in. A node change that
+would break a saved graph fails a test rather than surfacing as a confusing error in
+somebody's browser.
 
-`tests/test_examples.py` runs the same comparison as part of the normal test suite, so a
-node change that would break a saved graph fails a test rather than surfacing as a
-confusing error in somebody's browser.
+```bash
+python -m pytest tests/test_examples.py -q
+```
 
 ## Where this fits in an AI video chain
 
