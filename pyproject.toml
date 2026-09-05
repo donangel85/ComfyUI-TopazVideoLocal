@@ -19,9 +19,10 @@ classifiers = [
 Repository = "https://github.com/donangel85/ComfyUI-TopazVideoLocal"
 
 [tool.comfy]
-# TODO before publishing: PublisherId is the publisher name created at
-# registry.comfy.org (GitHub login). It cannot be guessed from here, and the publish
-# workflow checks that it has been filled in.
+# The publisher name from registry.comfy.org. Empty here because this package is not on
+# the ComfyUI Registry yet; .github/workflows/publish.yml refuses to run until it is
+# filled in. A fork publishing under its own name needs its own publisher and its own
+# REGISTRY_ACCESS_TOKEN repository secret.
 PublisherId = ""
 DisplayName = "ComfyUI-TopazVideoLocal"
 # Optional: a URL to a square icon, 400x400 or smaller.

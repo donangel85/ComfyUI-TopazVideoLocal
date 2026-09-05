@@ -14,11 +14,20 @@ installation — no cloud, no API keys, no uploads.
 
 ## Install
 
-Clone or copy the package into ComfyUI's `custom_nodes` directory, or link it from
-elsewhere with a junction (no admin rights needed):
+From ComfyUI's `custom_nodes` directory:
 
 ```bash
-mklink /J "F:\ComfyUI\custom_nodes\ComfyUI-TopazVideoLocal" "D:\TopazLab-Studio\ComfyUI-TopazVideoLocal"
+git clone https://github.com/donangel85/ComfyUI-TopazVideoLocal.git
+```
+
+There is nothing to build and nothing to `pip install`: the only dependency is `numpy`,
+which every ComfyUI installation already has.
+
+To update later:
+
+```bash
+cd ComfyUI-TopazVideoLocal
+git pull
 ```
 
 Restart ComfyUI. Start with the **Topaz Diagnostics** node — it reports what was found
@@ -197,8 +206,8 @@ above the progressive floor, `ddv-3` removed 72% of the combing while the motion
 through at exactly the speed it went in.
 
 A control that silently has no effect is worse than none — someone with stuttering output
-would spend an afternoon on it. `research/visual_check.py` keeps a check that fails if a
-future Topaz release starts documenting the parameter, at which point it can come back.
+would spend an afternoon on it. If a future Topaz release starts documenting the
+parameter, the control can come back.
 
 ## Frame interpolation: how many frames come back
 
@@ -242,9 +251,8 @@ nonsense=42 on prob-4  ->  exits 0, output unchanged      (the control)
 ```
 
 `parameters` is a dictionary option, so a key an upscale model has no use for is dropped
-without a word. The node could never have done anything. It is gone; `research/probe_sam2.py`
-holds the measurements and fails if `vsam` ever becomes a model this installation
-accepts, which is when it should be rebuilt — against `model=vsam`, not as parameters on
+without a word. The node could never have done anything, so it is gone. If a future Topaz
+build ships a `vsam` model, it can be rebuilt — against `model=vsam`, not as parameters on
 something else.
 
 ## What the picture actually does
@@ -270,8 +278,11 @@ untouched frames). Mild, but there is no reason to pay it: put it in the graph w
 there is motion blur to remove, and bypass it otherwise. The same goes for deinterlacing
 progressive footage and stabilising a locked-off shot.
 
-Reproduce with `research/visual_check.py` (synthetic material, known defects) and
-`research/real_material_check.py` (real clips). Both write pictures next to the numbers.
+Both halves are measured the same way. Synthetic material carries a defect of known
+size, so removing it can be counted exactly. Real footage has no ground truth of its own,
+so it is either degraded in a known way or held back as its own reference — which is what
+makes a number like "28.56 dB against 27.75" mean something rather than being an
+impression.
 
 ## Letting Topaz choose the parameters
 
@@ -465,37 +476,69 @@ it can be pasted straight into a terminal to reproduce a failure.
 
 <img src="images/node-engine-settings.png" alt="Topaz Engine Settings" width="330">
 
-## Development
+## Working on this
+
+Fork it, clone your fork into `custom_nodes`, and you have a working setup: there is no
+build step and the only dependency is `numpy`.
 
 ```bash
 python -m pytest
 ```
 
-The tests cover the command builder, error classification, the model catalog, frame
-conversion, the resolution arithmetic, installation discovery, the user-preset store and
-the shipped example workflows. They need neither Topaz nor ComfyUI: `topaz_video` is
-deliberately free of ComfyUI imports, and the two files that do reach into the node layer
-only read `INPUT_TYPES`. CI runs them on Windows and Linux, Python 3.10 to 3.13.
+The suite needs **neither Topaz nor ComfyUI**. `topaz_video/` has no ComfyUI imports at
+all, and the two test files that do reach into the node layer only read `INPUT_TYPES`.
+That is what lets CI run it on Windows and Linux across Python 3.10 to 3.13 — a machine
+with no Topaz Video installed still checks the command builder, error classification, the
+model catalogue, frame conversion, the resolution arithmetic, installation discovery, the
+preset store and every shipped example workflow.
 
-What the suite cannot see is whether **ComfyUI** agrees with these node definitions —
-and that gap is where every shipped bug has come from, because ComfyUI maps a saved
-workflow's widget values onto a node **by position**. With ComfyUI running, ask it:
+Two things the suite deliberately cannot check, and how to check them yourself:
+
+**Does ComfyUI agree with these node definitions?** That gap is where every bug in this
+package has come from, because ComfyUI maps a saved workflow's widget values onto a node
+**by position**. With ComfyUI running:
 
 ```bash
-python research/object_info_check.py --url http://127.0.0.1:8188
+python tools/object_info_check.py --url http://127.0.0.1:8188
 ```
 
-It compares `/object_info` — exactly what the frontend is handed — against the widget-order
-baselines, checks every value in `examples/*.json` against ComfyUI's own ranges and
-choice lists, and confirms the preset routes answer. Read-only; it runs no prompts.
+It reads `/object_info` — exactly what ComfyUI hands its frontend — and compares it
+against the widget-order baselines, checks every value in `examples/*.json` against
+ComfyUI's own ranges and choice lists, and confirms the preset routes answer. Read-only:
+it queues no prompts and changes nothing.
 
-Layout:
+**Does it still produce the right picture?** That needs a licensed Topaz installation and
+real footage, so it cannot live in CI. The measurements in
+[What the picture actually does](#what-the-picture-actually-does) came from scripts kept
+outside this repository; if you change how a filter is built, run something equivalent
+before trusting the result. Structure passing is not the same as the output being right —
+a deinterlace that silently does nothing passes every structural test there is.
+
+### Layout
 
 | Directory | Contents |
 |---|---|
 | `topaz_video/` | Backend. Knows Topaz, knows nothing about ComfyUI, testable on its own. |
 | `topaz_nodes/` | The ComfyUI layer. Thin: gather widget values, call the backend, turn a failure into a message worth reading. |
 | `web/` | Frontend extension. Only the Upscale Params buttons — everything else works without it. |
+| `examples/` | The workflows, generated by `tools/make_examples.py` from the live node definitions. |
+| `tools/` | Checks that need something CI does not have: a running ComfyUI, or the repository itself. |
+
+### Changing an example workflow
+
+Edit `tools/make_examples.py` and regenerate, rather than editing the JSON. A workflow
+file stores widget values as a positional array, so a hand-edited example drifts the
+moment a node gains a widget — silently, because nothing reads these files until somebody
+loads one.
+
+```bash
+python tools/make_examples.py           # rewrite them
+python tools/make_examples.py --check   # compare only, write nothing
+```
+
+Arranging the nodes by hand in ComfyUI and saving is fine and expected: regenerating
+carries every node's position, size, title and colour over from the file on disk. Only
+values, wiring and which nodes exist come from the generator.
 
 ### Adding a widget to an existing node
 
@@ -538,19 +581,6 @@ outside a widget's range fails the whole prompt:
 ```
 Value 0.3 bigger than max of 0.1: prenoise
 ```
-
-### Publishing
-
-Two placeholders in `pyproject.toml` have to be filled in first, and neither can be
-guessed: the GitHub account in `[project.urls] Repository`, and `[tool.comfy]
-PublisherId`, which is the publisher name created at
-[registry.comfy.org](https://registry.comfy.org). A repository secret named
-`REGISTRY_ACCESS_TOKEN` comes from the same place.
-
-`.github/workflows/publish.yml` is **manual-trigger only** and refuses to run while
-either placeholder is still there. The usual setup publishes on every push that touches
-`pyproject.toml`, which is a reasonable default once a package has a version history and
-a trap before it has one.
 
 ## Licence
 

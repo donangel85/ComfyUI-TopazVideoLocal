@@ -13,14 +13,11 @@ user_presets.json
 *.log
 temp/
 
-# Research, documentation and test footage live OUTSIDE this repository (siblings
-# in the parent folder) so they cannot be committed by accident. These entries
-# only matter if the repository is ever moved.
+# Scratch space for working on this: experiments, notes, and the footage used to
+# check the nodes against real material. None of that belongs in the package, and
+# video files in particular are impossible to get back out of a git history.
 research/
 docs/
-
-# The owner's own video and photographs, used to verify the nodes against real
-# material. Never part of the package and never published.
 Testmaterial/
 testmaterial/
 
